@@ -1,5 +1,6 @@
 from aoc import *
 from collections import *
+from asm import *
 
 def solve(inp):
     print(inp)
