@@ -4,7 +4,9 @@ from asm import *
 
 def solve(inp):
     print(inp)
-    inp = intgrid(inp)    
+    data = intgrid(inp)
+    data = inp.splitlines()
+        
     part1 = 0
     
     part2 = 0

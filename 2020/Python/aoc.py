@@ -90,3 +90,33 @@ def ints(i = 1, step = 1):
     while True:
         yield i
         i += step
+
+"""
+# having 4 or more # in its neighbourhood changes to L,
+L having no # in its neighbourhood changes to #
+everything else stays
+TODO
+rules = {
+    ("#", "#", [4,5,6,7,8]): "L",
+    ("L", "#", [0]): "#"
+}
+
+"""
+"""
+def next_life(grid, rules): 
+    cpy = [list(x) for x in grid]
+    changed = False
+    for y in range(len(grid)):
+        for x in range(len(grid[0])):
+            n = 0
+            for X, Y in neigbours8(x,y):
+                if Y in range(len(grid)) and X in range(len(grid[0])):
+                    n += grid[Y][X] == "#"
+            
+            if grid[y][x] == "L" and n == 0:
+                cpy[y][x] = "#"
+                
+            elif grid[y][x] == "#" and n >= 4:
+                cpy[y][x] = "L"
+    return cpy
+"""
