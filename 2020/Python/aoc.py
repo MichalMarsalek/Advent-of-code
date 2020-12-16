@@ -17,6 +17,12 @@ def neigbours4(x, y):
 def count(x):
     return len(list(x))
 
+def product(seq):
+    res = 1
+    for x in seq:
+        res *= x
+    return res
+
 def plot_complex(points):
     X = [x.real for x in points]
     Y = [x.imag for x in points]
