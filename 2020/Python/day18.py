@@ -13,17 +13,17 @@ class Int:
     def __int__(self):
         return self.v
 
-def transform(inp, part):
+def myeval(inp, part):
     for c in "0123456789":
         inp = inp.replace(c, f"Int({c})")
     inp = inp.replace("*", "-")
     inp = inp.replace("+", "+*"[part])
-    return inp
+    return int(eval(inp))
 
 def solve(inp):
     data = inp.splitlines()
-    part1 = sum(int(eval(transform(x, 0))) for x in data)
-    part2 = sum(int(eval(transform(x, 1))) for x in data)
+    part1 = sum(myeval(transform(x, 0)) for x in data)
+    part2 = sum(myeval(transform(x, 1)) for x in data)
     return part1, part2
 
 
