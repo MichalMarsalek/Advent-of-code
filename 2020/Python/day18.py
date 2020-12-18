@@ -22,8 +22,8 @@ def myeval(inp, part):
 
 def solve(inp):
     data = inp.splitlines()
-    part1 = sum(myeval(transform(x, 0)) for x in data)
-    part2 = sum(myeval(transform(x, 1)) for x in data)
+    part1 = sum(myeval(x, 0) for x in data)
+    part2 = sum(myeval(x, 1) for x in data)
     return part1, part2
 
 
