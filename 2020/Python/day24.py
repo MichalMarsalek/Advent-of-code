@@ -1,6 +1,5 @@
 from aoc import *
 from collections import *
-from asm import *
 
 DIR = {"e":(1,0), "w":(-1,0), "sw":(0,-1), "se":(+1,-1), "nw":(-1,+1), "ne":(0,+1)}
 
