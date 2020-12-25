@@ -12,7 +12,7 @@ import sets, tables, intsets,  times, os, math, strutils, sequtils
 ## Troughout the calculation, we only track which cosets are active.
 ## In the end, we weight each active cosets by its size.
 
-const DIM = 12
+const DIM = 7
 const k = DIM-2
 const ROUNDS = 6
 const CROP_SYM = 0b11111111111111111111111111111111111
@@ -77,7 +77,7 @@ func getSymNeighboursWeights(x: array[7, int]): seq[(int, int)] =
                                        x[4]-L4-R4+R3+L5,
                                        x[5]-L5-R5+R4+L6,
                                        x[6]-L6+R5]
-                                result.add((newCell.pack, m0*m1*m2*m3*m4*m5*m6))
+                                result.add((newCell.pack xor x.pack, m0*m1*m2*m3*m4*m5*m6))
 
 func neg(a:int):int {.inline.}=
     ## Returns the negative part of a number.
@@ -99,7 +99,7 @@ func getSymNeighbours(x: array[7, int]): seq[int] =
                                     x[4] + s3 - s4,
                                     x[5] + s4 - s5,
                                     + s5]
-                            result.add(newCell.pack)
+                            result.add(newCell.pack xor x.pack)
 
 # Filling the precomp tables:
 let time = cpuTime()
@@ -136,7 +136,7 @@ proc nxt(grid: IntSet, round:int): IntSet =
         var sym = int(cell and CROP_SYM)
         for dxy in DXY:
             for sym2 in SYM_NEIGHBOURS[sym]:
-                counting.inc((cell + dxy) xor sym xor sym2)
+                counting.inc((cell + dxy) xor sym2)
                 test += 1
     for cell,val in counting:
         if val <= 4:
@@ -145,7 +145,7 @@ proc nxt(grid: IntSet, round:int): IntSet =
             block explore:
                 for dxy in DXY:
                     for sym2, amount in SYM_NEIGHBOURS_WEIGHTS[sym].items:
-                        let cell2 = (cell + dxy) xor sym xor sym2
+                        let cell2 = (cell + dxy) xor sym2
                         if cell2 in grid:
                             neighbours_count += amount
                         if neighbours_count > 4:
