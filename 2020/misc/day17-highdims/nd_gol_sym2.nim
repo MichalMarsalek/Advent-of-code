@@ -12,7 +12,7 @@ import sets, tables, intsets,  times, os, math, strutils, sequtils
 ## Troughout the calculation, we only track which cosets are active.
 ## In the end, we weight each active cosets by its size.
 
-const DIM = 15
+const DIM = 13
 const k = DIM-2
 const ROUNDS = 6
 const CROP_SYM = 0b11111111111111111111111111111111111
@@ -29,9 +29,8 @@ const DXY = [-1 * (1 shl 50) - 1 * (1 shl 35),
               1 * (1 shl 50) + 0 * (1 shl 35),
               1 * (1 shl 50) + 1 * (1 shl 35)]
 
-## mapping from sym points to sym neigbours
-var SYM_NEIGHBOURS_WEIGHTS = initTable[int, seq[(int, int)]]()
-var SYM_NEIGHBOURS = initTable[int, seq[int]]()
+## mapping from sym points to sym neigbours with weights
+var SYM_NEIGHBOURS_WEIGHTS = initTable[int, CountTable[int]]()
 
 ## packing/unpacking, not used in the main computation, mostly for precomp and debugging.
 func pack(sym: array[7, int]): int =
@@ -52,59 +51,46 @@ func unpack2(packed:int): (int, int, int) =
     let y = (packed shr 35) and 0b11111
     let x = (packed shr 50)
     return (x, y, sym.int)
+    
+func binom2(n,k:int): int {.inline.} =
+    ## Returns (n choose k) or 4 if it's unnecesarily big.
+    if k == 0 or k == n:
+        return 1
+    if n <= 3:
+        return n
+    return 4
 
 iterator genSplits(amount: int): (int, int, int) =
     ## Generates all 3-partitions of amount as well as total number of combinations.
     for L in 0..amount:
         for R in 0..amount-L:
-            yield (L, R, binom(amount, L)*binom(amount-L, R))
+            yield (L, R, binom2(amount, L)*binom2(amount-L, R))
 
-func getSymNeighboursWeights(x: array[7, int]): seq[(int, int)] =
+func getSymNeighboursWeights(x: array[7, int]): CountTable[int] =
     ## Generates all neigbours of given cell with weights.
     ## Does so by considering how much of each occurence of 0s,...6s increases and decreases.
-    for L0,R0,m0 in gen_splits(x[0]):
+    for R0 in 0..x[0]:
+        let m0 = 1 shl R0
         for L1,R1,m1 in gen_splits(x[1]):
             for L2,R2,m2 in gen_splits(x[2]):
                 for L3,R3,m3 in gen_splits(x[3]):
                     for L4,R4,m4 in gen_splits(x[4]):
                         for L5,R5,m5 in gen_splits(x[5]):
                             for L6 in 0..x[6]:
-                                let m6 = binom(x[6], L6)
-                                let newCell = [x[0]-L0-R0+L1,
-                                       x[1]-L1-R1+R0+L0+L2,
+                                let m6 = binom2(x[6], L6)
+                                let newCell = [x[0]-R0+L1,
+                                       x[1]-L1-R1+R0+L2,
                                        x[2]-L2-R2+R1+L3,
                                        x[3]-L3-R3+R2+L4,
                                        x[4]-L4-R4+R3+L5,
                                        x[5]-L5-R5+R4+L6,
                                        x[6]-L6+R5]
-                                result.add((newCell.pack xor x.pack, m0*m1*m2*m3*m4*m5*m6))
-
-func neg(a:int):int {.inline.}=
-    ## Returns the negative part of a number.
-    min(a,0)
-
-func getSymNeighbours(x: array[7, int]): seq[int] =
-    ## Generates all neigbours of given point.
-    ## Does so by considering the flow between 0s -> 1s, 1s -> 2s etc.
-    for s0 in -x[1]..x[0]:
-        for s1 in -x[2]..x[1]+neg(s0):
-            for s2 in -x[3]..x[2]+neg(s1):
-                for s3 in -x[4]..x[3]+neg(s2):
-                    for s4 in -x[5]..x[4]+neg(s3):
-                        for s5 in 0..x[5]+neg(s4):
-                            let newCell = [x[0] - s0,
-                                    x[1] + s0 - s1,
-                                    x[2] + s1 - s2,
-                                    x[3] + s2 - s3,
-                                    x[4] + s3 - s4,
-                                    x[5] + s4 - s5,
-                                    + s5]
-                            result.add(newCell.pack xor x.pack)
+                                result.inc(newCell.pack, m0*m1*m2*m3*m4*m5*m6)
+        
 
 # Filling the precomp tables:
 let time = cpuTime()
 var cells_count = 0
-var neighbours_count = 0
 var neighbours_countW = 0
 for A0 in 0..k:
     for A1 in 0..k-A0:
@@ -115,48 +101,37 @@ for A0 in 0..k:
                         let A6 = k-A0-A1-A2-A3-A4-A5
                         var cell = [A0, A1, A2, A3, A4, A5, A6]
                         var cellPack = cell.pack
-                        var neigh = cell.getSymNeighbours
                         var neighW = cell.getSymNeighboursWeights
                         SYM_NEIGHBOURS_WEIGHTS[cellPack] = neighW
-                        SYM_NEIGHBOURS[cellPack] = neigh
+                        #echo(cell, " ", neighW)
                         inc cells_count
-                        neighbours_count += neigh.len
                         neighbours_countW += neighW.len
 echo "Precomputation time taken: ", cpuTime() - time
 echo "Sym Cells: ", cells_count
 echo "Average number of sym neighbours:", neighbours_countW div cells_count
-echo "Average number of pure sym neighbours:", neighbours_count div cells_count
 
 # EVOLUTION
-proc nxt(grid: IntSet, round:int): IntSet =
-    ## Given a set of active cosets, returns a set of cosets in the next time step.
+proc nxt(grid: seq[int]): seq[int] =
+    ## Given a list of active cosets, returns a list of cosets in the next time step.
     var counting: CountTable[int] 
-    var test = 0
     for cell in grid:
         var sym = int(cell and CROP_SYM)
-        for dxy in DXY:
-            for sym2 in SYM_NEIGHBOURS[sym]:
-                counting.inc((cell + dxy) xor sym2)
-                test += 1
+        for sym2 in SYM_NEIGHBOURS_WEIGHTS[sym].keys:
+            for dxy in DXY:
+                let cell2 = (cell + dxy) xor sym xor sym2
+                let w = SYM_NEIGHBOURS_WEIGHTS[sym2][sym]
+                counting.inc(cell2, 2*w)
+        counting.inc(cell)
     for cell,val in counting:
-        if val <= 4:
-            var neighbours_count = 0
-            var sym = int(cell and CROP_SYM)
-            block explore:
-                for dxy in DXY:
-                    for sym2, amount in SYM_NEIGHBOURS_WEIGHTS[sym].items:
-                        let cell2 = (cell + dxy) xor sym2
-                        if cell2 in grid:
-                            neighbours_count += amount
-                        if neighbours_count > 4:
-                            break explore
-            if neighbours_count == 3 or (neighbours_count == 4 and cell in grid):
-                result.incl(cell)
+        # active + 2 or 3 other active neigbours = active + 3 or 4 active neigbours = 0111 or 1001 = 7 or 9
+        # not active + 3 other active neigbours = not active + 3 active neigbours   = 0110         = 6
+        if (val == 6) or (val == 7) or (val == 9):
+            result.add(cell)
 
 proc weight(point:int):int =
     ## Returns a weight of a coset for final calculation.
     ## Weight is number of distinct permutations times 2^(number of nonzeroes).
-    var sym = point.unpack2[2].unpack
+    let sym = point.unpack2[2].unpack
     result = fac(k)
     for q in sym:
         result = result div fac(q)
@@ -164,13 +139,13 @@ proc weight(point:int):int =
     
 
 # Loads input
-var grid = initIntSet()
+var grid = newSeq[int]()
 var row = 0
 let input = open("input.txt")
 for line in input.lines:
   for i, col in line:
     if col == '#':
-        grid.incl(pack2(10+i, 10+row, k))
+        grid.add(pack2(10+i, 10+row, k))
   inc row
 input.close()
 
@@ -178,7 +153,7 @@ input.close()
 # Run computation
 let time2 = cpuTime()
 for round in 1..ROUNDS:
-    grid = nxt(grid, round)
+    grid = nxt(grid)
 
 echo "Computation time taken: ", cpuTime() - time2
 echo "Partial: ", grid.len

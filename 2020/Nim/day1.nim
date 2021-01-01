@@ -1,16 +1,15 @@
 import aoc
 
-solution:
-    let numbers = input.column
-    part1:
-        for i in 0..<numbers.len:
-            for j in i<..numbers.len:
-                if numbers[i] + numbers[j] == 2020:
-                    return numbers[i] * numbers[j]
-    part2:
-        for i in 0..<numbers.len:
-            for j in i<..numbers.len:
-                for k in j<..numbers.len:
-                    if numbers[i] + numbers[j] + numbers[k] == 2020:
-                        return numbers[i] * numbers[j] * numbers[k]
-                
+func solve*(input:string): (int, int) =
+    var numbers: set[int16]
+    for n in input.parseInts:
+        numbers.incl(n.int16)
+    var part1, part2: int
+    for a in numbers:
+        for b in numbers - {a}:
+            if a + b == 2020:
+                part1 = a.int * b.int
+            let c = 2020 - a - b
+            if c in numbers:
+                part2 = a.int * b.int * c.int
+    return (part1, part2)

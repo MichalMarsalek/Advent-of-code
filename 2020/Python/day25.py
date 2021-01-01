@@ -7,6 +7,8 @@ def dlog(base, val, mod):
             return x
         v = v*base % mod
     
+    
+    
 
 def solve(inp):
     mod = 20201227
