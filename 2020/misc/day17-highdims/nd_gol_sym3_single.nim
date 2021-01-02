@@ -7,18 +7,13 @@ import sets, tables, intsets,  times, os, math, strutils, sequtils
 ## each position storing the amount of 0s, 1s, ..., 6s in the coordinate.
 ## So, every point is represented by 9 values, these are further packed into a single int64.
 ## 
-## In the precomputation phase we calculate neigbours of all cells that might get activated (restricted on the symmetric component).
-##
 ## Troughout the calculation, we only track which cosets are active.
 ## In the end, we weight each active cosets by its size.
 
-echo "dim?"
-let DIM = stdin.readLine.parseInt
-let k = DIM-2
 const ROUNDS = 6
 const CROP_SYM = 0b11111111111111111111111111111111111
+var DIM, k: int
 
-# PRECOMPUTATION
 ## differences in the nonsymmetric dimensions
 const DXY = [-1 * (1 shl 50) - 1 * (1 shl 35),
              -1 * (1 shl 50) + 0 * (1 shl 35),
@@ -30,10 +25,7 @@ const DXY = [-1 * (1 shl 50) - 1 * (1 shl 35),
               1 * (1 shl 50) + 0 * (1 shl 35),
               1 * (1 shl 50) + 1 * (1 shl 35)]
 
-## mapping from sym points to sym neigbours with weights
-var SYM_NEIGHBOURS_WEIGHTS = initTable[int, seq[int]]()
-
-## packing/unpacking, not used in the main computation, mostly for precomp and debugging.
+## packing/unpacking
 func pack(sym: array[7, int]): int =
     for i in 0..6:
         result = (result shl 5) xor sym[6-i]
@@ -62,17 +54,10 @@ func binom2(n,k:int): int {.inline.} =
     if n <= 3:
         return n
     return 4
-
-iterator genSplits(amount: int): (int, int, int) =
-    ## Generates all 3-partitions of amount as well as total number of combinations.
-    for L in 0..amount:
-        for R in 0..amount-L:
-            yield (L, R, binom2(amount, L)*binom2(amount-L, R))
-
+    
 func neg(a:int):int {.inline.}=
     ## Returns the negative part of a number.
     min(a,0)
-
 func pos(a:int):int {.inline.}=
     ## Returns the positive part of a number.
     max(a,0)
@@ -116,36 +101,12 @@ func getSymNeighboursWeights(x: array[7, int]): seq[int] =
                                                     let m4 = binom2(newCell[4], R3) * binom2(newCell[4]-R3, L5)
                                                     let m5 = binom2(newCell[5], R4)
                                                     ways  += m0*m1*m2*m3*m4*m5
-                                                    #debugEcho((m0,m1,m2,m3,m4,m5))
                                                     if s0 == R0-L1 and s1 == R1-L2 and s2 == R2-L3 and s3 == R3-L4 and s4 == R4-L5:
                                                         if ways >= 4:
                                                             break slow                                                          
                                             
                             result.add(newCell.pack)
                             result.add(ways)
-        
-
-# Filling the precomp tables:
-#[
-let time = cpuTime()
-var cells_count = 0
-var neighbours_countW = 0
-for A0 in 0..k:
-    for A1 in 0..k-A0:
-        for A2 in 0..k-A0-A1:
-            for A3 in 0..k-A0-A1-A2:
-                for A4 in 0..k-A0-A1-A2-A3:
-                    let A5 = k-A0-A1-A2-A3-A4
-                    var cell = [A0, A1, A2, A3, A4, A5, 0]
-                    var cellPack = cell.pack
-                    var neighW = cell.getSymNeighboursWeights
-                    SYM_NEIGHBOURS_WEIGHTS[cellPack] = neighW
-                    inc cells_count
-                    neighbours_countW += neighW.len
-echo "Precomputation time taken: ", cpuTime() - time
-echo "Sym Cells: ", cells_count
-echo "Average number of sym neighbours:", neighbours_countW div cells_count
-]#
 
 # EVOLUTION
 proc nxt(grid: seq[int]): seq[int] =
@@ -177,26 +138,30 @@ proc weight(point:int):int =
     for q in sym:
         result = result div fac(q)
     result = result shl (k-sym[0])
-    
+        
+for DIM in 31..40:
+    k = DIM-2
 
-# Loads input
-var grid = newSeq[int]()
-var row = 0
-let input = open("input.txt")
-for line in input.lines:
-  for i, col in line:
-    if col == '#':
-        grid.add(pack2(10+i, 10+row, k))
-  inc row
-input.close()
+    # Loads input
+    var grid = newSeq[int]()
+    var row = 0
+    let input = open("input.txt")
+    for line in input.lines:
+      for i, col in line:
+        if col == '#':
+            grid.add(pack2(10+i, 10+row, k))
+      inc row
+    input.close()
 
 
-# Run computation
-let time2 = cpuTime()
-for round in 1..ROUNDS:
-    grid = nxt(grid)
+    # Run computation
+    let time2 = cpuTime()
+    for round in 1..ROUNDS:
+        grid = nxt(grid)
 
-echo "Computation time taken: ", cpuTime() - time2
-echo "Partial: ", grid.len
-echo "Result: ", grid.toSeq.map(weight).sum
+    echo "Dim: ", DIM
+    echo "Computation time taken: ", cpuTime() - time2
+    echo "Partial: ", grid.len
+    if DIM <= 20:
+        echo "Result: ", grid.toSeq.map(weight).sum
 discard stdin.readLine
