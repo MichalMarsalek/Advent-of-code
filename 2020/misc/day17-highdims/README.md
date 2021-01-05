@@ -10,3 +10,4 @@ See [reddit thread regarding this topic](https://www.reddit.com/r/adventofcode/c
 * *nd_gol_sym2.nim* is a minor speed up of the above using list of active cells instead of a set
 * *nd_gol_sym3.nim* significant speed up by using single neigbourhood function/table (d=22 under 3 minutes)
 * *nd_gol_sym3_single.nim* version without precomputation (same speed as above, but RAM is not problem so d=25 under 6 minutes).
+* *nd_gol_sym4.nim* is the fastest version yet. d=10 in 0.1 s, d=20 in 4.5 s, d=30 in 1 min, d=40 in 8 minutes
