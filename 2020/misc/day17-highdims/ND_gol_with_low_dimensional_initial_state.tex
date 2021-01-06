@@ -331,7 +331,32 @@
 
 	\emph{Remark:} The above points are only true for our inputs and $\ell=2, t=6 (t \leq 6)$. We do not yet understand where they come from or how much they can be generalised.
 	
-	\newpage
+	\subsection{Intermezzo: counting permutations}
+	When going from the final alive cosets to the final answer we need to count distinct permutations of a multiset.
+	
+	Every highschooler should know, that number of distinct permutations of a multiset $m \in \calA ^{\NN_0}$ is equal to 
+	
+	$$\frac{|m|!}{\prod_{x\in m} m(x)!}$$
+	
+	In our case $|m| = k = d-2$.
+	Using this formula directly works for lower dimensions like $d=10$ but as soon as $k \geq 21$ ($d \geq 23$) we hit a problem!
+	$$21! > 2^{64}$$
+	In another words $k!$ (an intermediate value in our computation doesn't fit into a uint64). If you are using a language with buildin bigints like Python or Haskell, you don't care and if your aren't you have to look for a bigint library. Or do you?
+	
+	The final answer might be orders of magnitude smaller since we are dividing $|m|$ by other factorials. As long as the \emph{final answer} fits into 64 bits, we can do the whole calculation without needing a larger register.
+	
+	Instead of first doing all the multiplications $1 \cdot 2\cdot 3\cdot \dots\cdot |m|$ and only then proceed to division, you can permute the order of multiplications and divisions to always stay below $2^{64}-1$. However this approach gets mess, there's a more elegant way.
+	
+	\subsubsection{Modular arithmetics}
+	We would like to do the calculations modulo some big number $n$. Option of $n=2^{64}-59$ comes to mind, since it is a prime number. Primes are useful since for prime $n$, $\ZZ/n\ZZ \simeq \ZZ_n$ is a field which means that everything is nice and you can add, substract, multiply and divide any two elements (apart from division by 0 of course). But computers actually operate modulo $2^{64}$ (or $2^{32}$) and this double modulo would get messy.
+	Instead we will stick to calculations modulo $2^{64}$. Now there's the problem that some numbers (specifically even numbers) are not invertible. Yet, we need to divide by even numbers in our formula for counting permutations. This is not a major problem tho, as we can just handle the 2's separately. We will simply multiply and divide only the odd components of numbers and record what exponent of two should be applied at the end. After all in our case  we need to multiply the result by some power of two anyway... And multiplying by a power of two is just a binary shift...
+	How do we calculate the multiplicative inverse? The standard procedure is the Extended Euclidean algorithm. However, for cases of $n$ = $\rho^r$, one can use one of Peter Mongomery's algorithms.
+	
+	Let $x \in \ZZ_{64}^*$ (odd 64 bit integer). Let $f_x(y) = y(2-yx)$. Then $x^{-1} = f_x^5(x) \pmod{2^{64}}$. Impressive, right?
+	
+	$ $
+	
+	So what did we get? We can now calculate the result for $23 \leq d \leq 25$, after that the final result doesn't fit into 64 bits. In the end we need to still look for a bigints library.... Nevertheless I think that this exercise/intermezzo is interesting.
 	
 	\subsection{Using cummulative effects of sets of cosets}
 	TODO
