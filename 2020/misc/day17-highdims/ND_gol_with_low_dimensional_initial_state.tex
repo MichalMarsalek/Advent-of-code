@@ -1,0 +1,363 @@
+\documentclass[]{article}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage[margin=1in]{geometry}
+\usepackage{multirow}
+\usepackage{hyperref}
+\usepackage[noend]{algpseudocode}
+\usepackage[Algorithm,ruled]{algorithm}
+
+\algnewcommand\Yield{\textbf{yield }}
+\algnewcommand\Goto{\textbf{go to }}
+\algnewcommand\Label{\textbf{label }}
+\algnewcommand\algorithmicinput{\textbf{Input:}}
+\algnewcommand\algorithmicoutput{\textbf{Output:}}
+\algnewcommand\Input{\item[\algorithmicinput]}%
+\algnewcommand\Output{\item[\algorithmicoutput]}%
+
+%opening
+\title{High dimensional game of life with low dimensional initial state}
+\author{Michal Maršálek, \href{https://www.reddit.com/u/mstksg/}{reddit.com/u/mstksg/}, \href{https://www.reddit.com/u/p\_tseng/}{reddit.com/u/p\_tseng}}
+
+\newcommand{\NN}{\mathbb N}
+\newcommand{\ZZ}{\mathbb Z}
+\newcommand{\RR}{\mathbb R}
+\newcommand{\calP}{\mathcal P}
+\newcommand{\calA}{\mathcal A}
+\newcommand{\calD}{\mathcal D}
+\newcommand{\nxt}{\texttt{nxt}}
+\newcommand{\neigh}{\texttt{neigh}}
+\newcommand{\finalw}{\texttt{final\_w}}
+\newcommand{\countt}{\mathrm{count}}
+\newcommand{\sym}{\mathrm{sym}}
+\newcommand{\gen}{\mathrm{gen}}
+
+\begin{document}
+	
+	\maketitle
+	
+	\begin{abstract}
+		This document summarises results and ideas from a reddit thread about a generalised version of a problem from Advent of code. This problem is about a Game of life, a 0-player game invented by John Conway. In this case we are in a setting of high dimensions but with special initial conditions that give rise to many interesting patterns and structures.
+	\end{abstract}
+\newpage
+	
+	\section{Description of the problem}
+	
+	\subsection{Game of life}
+	
+	Let $d\in\NN$. Consider the space $\ZZ ^d$. Each element of this space is called a \emph{cell} and each subset of this space is called a \emph{state}. If cell $x \in S \subset \ZZ^d$, we say that cell $x$ is \emph{alive}, otherwise, we say that it's \emph{dead}.
+	
+	Let $a,b \in \ZZ^d$. If $\max |a_i - b_i| \leq 1$, we say that cells $a$ and $b$ are neighbours. By $\neigh(a)$ we denote all neigbours of $b$.\\
+	Note: in this notation we consider a cell to be a neighbour of itself. That is each cell has exactly $3^d$ neighbours.
+	
+	\emph{Game of life} is a mapping from states to states,
+	$$\nxt_{\calA, \calD}: \calP(\ZZ^d) \to \calP(\ZZ^d)$$
+	such that
+	$$a \in \nxt_{\calA, \calD}(S) \iff \begin{cases}
+	a \in S \land |\neigh(a) \cap S| \in \calA\\
+	\text{or}\\
+	a \not\in S \land |\neigh(a) \cap S| \in \calD\\
+	\end{cases}
+	$$
+	where $\calA, \calD \subset \NN$.\\
+	\emph{Note:} we usually omit the indeces $\calA, \calD$.\\
+	State $\nxt(S)$ is called the \emph{next (time step)} state of the state $S$. Function $\nxt$ is also called the \emph{step} function, since it determines the next (time) step of the game of life.
+	
+	In another words:
+	\begin{itemize}
+		\item
+		if a cell is alive and has $n \in \calA$ alive neighbours it survives, otherwise it dies,
+		\item
+		if a cell is dead and has $n \in \calD$ alive neighbours it comes to life, otherwise it remains dead.
+	\end{itemize}
+	
+	By \emph{Game of life with initial state} we mean a pair $(S_0, \nxt_{\calA, \calD})$ uniquely generating a sequence
+	$$S_{i+1} = \nxt_{\calA, \calD}(S_i).$$
+	
+	\subsection{Low dimensional initial state and problem statement}
+	
+	Let $\ell,k \in \NN^+, \ell+k = d$.\\
+	Let $\widehat{S_0} \subset \ZZ^\ell$, $S_0 = \pi_d(\widehat{S_0}) = \widehat{S_0} \times\{0\}^k = \{x||0^k; x \in \widehat{S_0}\} \subset \ZZ^d$.\\
+	
+	We say $S_0$ is a \emph{$\ell$-dimensional state} in $d$-dimensional Game of life.
+	
+	The problem we are trying to solve is
+	
+	\begin{center}
+		Given $k, \ell \in \NN^+, \ell \ll k, d = k+\ell, \nxt, \widehat{S_0} \subset \ZZ^\ell, t \in \NN^+$, determine\\
+		$|S_t| = |\nxt^t(S_0)| = |\nxt^t(\pi_d(\widehat{S_0}))|.$
+	\end{center}
+	
+	\subsection{Generalisation/specialisation}
+	This problem is a generalisation of \href{https://adventofcode.com/2020/day/17}{Advent of code - year 2020 - day 17}.
+	
+	In this state of the research/experimenting we focus on the cases of $\ell = 2, t=6$, $\widehat{S_0} \subset \{6,\dots,13\}^2$.
+	
+	\newpage
+	\section{Solution methods}
+	\subsection{Brute force}
+	In this approach we don't use the fact that the initial state is low dimensional. Each alive cell tells all it's neigbours that it's there. Then, we go trough all cells that have at least one alive neighbour and set it alive or dead base on $\calA$ and $\calD$.
+	
+	\begin{algorithm}
+		\caption{Bruteforce}
+		\begin{algorithmic}
+			\Input{$d, \calA, \calD, \widehat{S_0}, t$}
+			\Output{solution}
+			\Function{nxt}{$S \subset \ZZ^d$}
+			\State $counter \gets \text{empty table}(\ZZ^d)\to \NN \text{ with default value = 0}$
+			\State $result \gets \{\}$
+			\ForAll{$a \in S$}
+			\ForAll{$b \in \Call{neigh}{a}$}
+			\State $counter[b] \gets counter[b] + 1$
+			\EndFor
+			\EndFor
+			
+			\ForAll{$(a, neigh\_count) \in counter$}
+			\If{$(a \in S \land neigh\_count \in \calA) \lor (a \not\in S \land neigh\_count \in \calD)$}
+				\State $result \gets result \cup \{a\}$
+			\EndIf
+			\EndFor
+			\State \Return $result$
+			\EndFunction
+			
+			\State $S \gets \pi_d(\widehat{S_0})$
+			\ForAll{$i=1..t$}
+				\State $S \gets \Call{nxt}{S}$
+			\EndFor
+			\State \Return $|S|$
+			
+		\end{algorithmic}
+	\end{algorithm}
+	
+	The fast exponential growth of the number of neigbours: $3^d$ as well as the alive cells makes the time complexity of this approach grow very fast with growing $d$.
+
+	\subsubsection{Technical details}
+	If we know that each coordinate will fit into $b$ bits (we know that the maximum coordinate can only grow by 1 for each time step) we can pack the whole cell into a single $d \times b$-bit integer.
+	
+	This version is implemented in \href{https://github.com/MichalMarsalek/Advent-of-code/blob/master/2020/misc/day17-highdims/nd_gol.nim}{nd\_gol.nim}.
+	
+	For our input state ($8\times8$) and $t=6$, this naive approach only works for low dimensions: $d=6$ takes 8 seconds, $d=7$ takes 4 minutes.
+	
+	\subsection{Symmetries}
+	
+	The low dimension of the initial state gives us tremendous advantage. The game of life evolves in very symmetric ways and we can use its structure to speed up the computation.
+	
+	Each cell now breaks into $\ell$ dimensional general component $gen$ and a $k$ dimensional symmetric component $sym$.\\
+	Let $\varphi: \ZZ^k \to \NN_0^{\NN_0}, \varphi(\sym) = \{*\;|\sym_i|; i = 1..k\; *\}$. (We interpret $m \in \NN_0^{\NN_0}$ as multiset of values in $\NN_0$, employ notation $m(i)$ to mean number of occurences of $i$ in $m$ and $\{**\}$ also denotes multiset).
+	Consider the following equivalence
+	
+	
+	$$a \simeq b \iff a_{1..\ell} = b_{1..\ell} \quad\land\quad \varphi(a_{\ell+1..d}) = \varphi(b_{\ell+1..d})$$
+	
+	$ $
+	
+	The key observation is that \emph{equivalent cells are always either all alive or all dead}.
+	
+	$ $
+	
+	Verification of this fact as well as the fact that $\simeq$ is equivalence is left as an exercise for the reader.
+	
+	With this knowledge we can devise a much more efficient algorithm by only tracking\\which cosets $[A] \in \calP[\ZZ^d] /\simeq$ are alive.
+	
+	First, we need to solve two problems:
+	\begin{enumerate}
+		\item How to get the final number of alive cells from a list of alive cosets?
+		\item How to count alive neigbours?
+	\end{enumerate}
+
+	\subsubsection{Determining the size of a coset}
+	Consider the function $\finalw(\gen,\sym) = |[(\gen,\sym)]|$. A quick thought tells us, that
+	$$\finalw(\sym) = 2^{k-\varphi(\sym)(0)}\frac{k!}{\prod_{i=0}^\infty \varphi(\sym)(i)!}.$$
+
+	In another words it is the number of distinct permutations multiplied by 2 for each nonzero coordinate.
+	
+	\subsubsection{Counting neighbours}
+	The nontrivial part is handling the neighbours in the symmetric component.
+	Neighbours of $\sym \in \ZZ^k$ are exactly such points that we get by decrementing some coordinates by one and incrementing some coordinates by one. In the $\varphi$ representation, it manifests as some amount of $i$'s changing to $i-1$'s and some amount changing to $i+1$'s. Note that in this representation 0's can only change to 1's but this action can be a manifestation of two different changes in $\ZZ^k$ ($0 \to -1$ and $0 \to +1$).
+	
+	Furthermore in the $\varphi$ representation, some changes can cancel out, yielding the same element.
+	For example $(1,2)$ neighbours $(2,1,1)$ but $\varphi((1,2,1)) = \{*\,1,1,2\,*\} = \varphi((2,1,1))$.
+	In a similar way a set of different changes to a point can all produce the same point in the $\varphi$ representation that nevertheless differs from the original point (like $(1,1) \to (1,2)$ and $(1,1) \to (2,1)$ where
+	$\varphi((1,2)) = \varphi((2,1)) \ne \varphi((1,1))$.
+	
+	Consider $s \in \varphi(\ZZ^k)$ representing a symmetrical component of a state after $t$ time steps.\\
+	Then
+	$$s \in \NN_0^{\{0..t\}}, \sum_{i=0}^t s(i) = k$$.
+	
+	Let $L_i \in \NN_0, i=1..t-1$ denote the number $i$'s in $s$ that change to $(i-1)$'s.	
+	
+	Let $R_i \in \NN_0, i=0..t-1$ denote the number $i$'s in $s$ that change to $(i+1)$'s.
+	
+	Of course, we require $L_i + R_i \leq s(i)$.
+	
+	These vectors $L$, $R$ identify all possible neighbours of $s \in \varphi(\ZZ^k)$ but they don't identify them \emph{uniquely}.
+	
+	Let us put
+	$$F_i = R_i - L_{i+1}, i=0..t-1.$$
+	We refer to the vector $F$ as a \emph{flow} between the coordinates of $s$.
+	The flow is what uniquely identifies each and every possible neighbour $s_2$ of $s$ as
+	
+	$$s_2(i) = s(i) - F_i + F_{i-1}, i = 0, ..., t,$$
+	
+	where $F_{-1}$ and $F_t$ are understood as 0.
+	
+	To summarize, to enumerate all neighbours (neigbouring cosets), we need to enumerate all possible flows. But to count the neighbours (we need the count of actual neigbours, not just cosets), we need to further go trough all pairs of $(L_i, R_i)$ that yield the corresponding $F_i$ as there's many of such pairs that yield a different actual point but the same coset.
+	
+	While enumerating all possible ways that $s$ neigbours $s_2$ we can exit early once we find that the multiplicity of the neighbouringness is greater than $\max \calA \cup \calD$ as at that point, we already know that the point (coset) will be dead next in the next step no matter what.
+	
+	\emph{Notation}: Let $a \in \RR$. We denote $a^- = \min(a,0), a^+ = \max(a,0)$.
+	
+	Let $\texttt{getNeigbours}$ be a function that maps a symmetric component of a coset $s \in \varphi(\ZZ^k)$ to a list
+	neighbours along with the multiplicities.
+	
+	\begin{algorithm}
+		\caption{Using symmetries}
+		\begin{algorithmic}
+			\Input{$d, \calA, \calD, \widehat{S_0}, t$}
+			\Output{solution}
+			\Function{getNeighbours}{$s \in \varphi(\ZZ^k)$}
+			\ForAll{$F_0 = -s(1),...,s(0)$}
+			\ForAll{$F_1 = -s(2),...,s(1)+F_0^-$}
+			\State $\ddots$
+			\ForAll{$F_{t-2} = -s(t-1),...,s(t-2)+F_{t-3}^-$}
+			\ForAll{$F_{t-1} = 0,...,s(t-1)+F_{t-2}^-$}
+			\State $s_2(i) \gets s(i) - F_i + F_{i-1}, i=0,...,t$
+			\State $w \gets 0$
+			
+			\ForAll{$R_0 = F_0^+,...,s(0)$}
+			\State $L_1 \gets R_0 - F_0$
+			\State $m \gets 2^{L_1}$
+			\ForAll{$R_1 = F_1^+,...,s(1)-F_1$}
+			\State $L_2 \gets R_1 - F_1$
+			\State $m \gets m \cdot \binom{s_2(1)}{R_0}\cdot \binom{s_2(1)-R_0}{L_2}$
+			\State $\ddots$
+			\ForAll{$R_{t-2} = F_{t-2}^+,...,s(t-2)-F_{t-2}$}
+			\State $L_{t-1} \gets R_{t-2} - F_{t-2}$
+			\State $m \gets m \cdot \binom{s_2({t-2})}{R_{t-3}}\cdot \binom{s_2({t-2})-R_{t-3}}{L_{t-1}}$
+			\State $m \gets m \cdot \binom{s_2({t-1})}{R_{t-2}}$
+			\State $w \gets w + m$
+			\If{$w > \max \calA \cup \calD$}
+				\State \Goto enough
+			\EndIf			
+			
+			\EndFor
+			\EndFor
+			\EndFor
+			\State \Label enough
+			\State \Yield $(s_2, w)$
+			\EndFor
+			\EndFor
+			\EndFor
+			\EndFor
+			\EndFunction
+			
+			\Function{nxt}{$S \subset \ZZ^\ell \times \varphi(\ZZ^k)$}
+			\State $counter \gets \text{empty table}(\ZZ^\ell \times \varphi(\ZZ^k)\to \NN) \text{ with default value = 0}$
+			\State $result \gets \{\}$
+			\ForAll{$(\gen_1, \sym_1) \in S$}
+			\ForAll{$\gen_2 \in \Call{neigh}{\gen_1}$}
+			\ForAll{$(\sym_2,w) \in \Call{getNeighbours}{\sym_1}$}
+			\State $counter[(\gen_2, \sym_2)] \gets counter[(\gen_2, \sym_2)] + w$
+			\EndFor
+			\EndFor
+			\EndFor
+			
+			\ForAll{$(a, neigh\_count) \in counter$}
+			\If{$(a \in S \land neigh\_count \in \calA) \lor (a \not\in S \land neigh\_count \in \calD)$}
+			\State $result \gets result \cup \{a\}$
+			\EndIf
+			\EndFor
+			\State \Return $result$
+			\EndFunction
+			
+			\State $S \gets \widehat{S_0} \times \{*\,0^k\,*\}$
+			\ForAll{$i=1..t$}
+			\State $S \gets \Call{nxt}{S}$
+			\EndFor
+			\State \Return $\sum\limits_{(\gen,\sym) \in S} \Call{final\_w}{\sym}$
+			
+		\end{algorithmic}
+	\end{algorithm}
+
+	\subsubsection{Technical details}
+	The expression
+	$$f(s_2(i), R_{i-1}, L_{i+1}) = \binom{s_2(i)}{R_{i-1}}\binom{s_2(i) - R_{i-1}}{L_{i+1}}$$
+	amounts to the number of different ways that quantity $s_2(i)$ can be partitioned into 3 parts of sizes $R_{i-1}$, $L_{i+1}$ and the rest. In another words it counts how many ways we can realise the resulting amount of $i$'s in $s_2$. We can therefore replace this expression with any function $g$ such that	
+	$$g(s_2(i), R_{i-1}, L_{i+1}) > \max(\calA\cup\calD) \text{ if } f(s_2(i), R_{i-1}, L_{i+1}) > \max(\calA\cup\calD)$$
+	and
+	$$g(s_2(i), R_{i-1}, L_{i+1}) = f(s_2(i), R_{i-1}, L_{i+1}) \text{ otherwise }$$
+	without changing the result, as at that point, we know the cell (coset) will be dead no matter what.
+	
+	$ $
+	
+	We can pack the symmetric part $s \in \varphi(\ZZ^k)$ into a single $(t+1)\log_2(k)$ bit integer. Furthermore we pack it together with the asymmetric part.
+	
+	$ $
+	
+	Evaluation of $\texttt{getNeighbours}$ can be precomputed (or memoized) and then reused across multiple time steps as well as across multiple cosets, that differ in the asymmetric component, but share the symmetric one. For our case the precomputation was only beneficial for lower dimensions as with higher $d$'s states become sparse.
+	
+	This version is implemented in \href{https://github.com/MichalMarsalek/Advent-of-code/blob/master/2020/misc/day17-highdims/nd_gol3.nim}{nd\_gol3.nim} 
+	(with precomputation) and \href{https://github.com/MichalMarsalek/Advent-of-code/blob/master/2020/misc/day17-highdims/nd_gol3\_single.nim}{nd\_gol3\_single.nim} (without precomputation).
+	
+	This version solves $d=10$ in under 1 second, $d=20$ in under 1 minute and $d=30$ in under 16 minutes.
+	
+	
+	\subsection{Further structure}
+	While playing around with the problem we noticed several interesting facts about the structure of the states in the Game of life with low dimensional initial state.
+	\begin{enumerate}
+		\item For higher dimensions, final number of active cosets after given number of time steps $t$ follows a exact pattern. For one of the inputs:
+		\begin{enumerate}
+			\item At $t=1$, a linear progression $21d - 15$ starting from $d=2$,
+			\item At $t=2$, a constant number $48$ starting from $d=4$,
+			\item At $t=3$, a quadratic progression $15.5d^2 + 29.5d - 166$ starting from $d=4$,
+			\item At $t=4$, a constant number $147$ starting from $d=7$,
+			\item At $t=5$, a quadratic progression $51d^2 - 62d - 173$ starting from $d=7$,
+			\item At $t=6$, a quadratic progression $d^2 + 109d + 70$ starting from $d=7$.
+		\end{enumerate}
+		What is more the 147 cosets after are the same points (modulo some transformation for making the dimensions work).
+		This point enables us to:
+		\begin{enumerate}
+			\item Predict the number of active cosets for any $d$ in virtually no time.
+			\item Calculate the final answer after $t=4$ in virtually no time.
+			\item Slightly speed up the calculation to $t>4$ by skipping the first 4 time steps.
+		\end{enumerate}
+		
+		\item For higher dimensions, the number of unique sets of $\sym$'s found in the state becomes constant. For one of the inputs,
+		there is only 49 different sets of symmetric parts found. For another one, it was 102.
+		This point allows us to introduce another speed up to our algorithm, by memoizing the cummulative effect of each such set to their neighbours.
+		
+		\item Multiplicities follow sequences in OESIS (TODO).
+	\end{enumerate}
+
+	\emph{Remark:} The above points are only true for our inputs and $\ell=2, t=6 (t \leq 6)$. We do not yet understand where they come from or how much they can be generalised.
+	
+	\newpage
+	
+	\subsection{Using cummulative effects of sets of cosets}
+	TODO
+	
+	\subsubsection{Technical details}
+	
+	This version is implemented in \href{https://github.com/MichalMarsalek/Advent-of-code/blob/master/2020/misc/day17-highdims/nd_gol3.nim}{nd\_gol4.nim} and solves $d=10$ in 0.1 seconds, $d=20$ in 5 seconds, $d=30$ in 1 minute, $d=40$ in 8 minutes and $d=50$ in half an hour.
+	
+	\section{Open questions}
+	\begin{enumerate}
+		\item Proof of quadratic progressions of coset counts.
+		\item Extrapolate the multiplicities under each $\gen$ and explain the behaviour.
+		\item Proof the low (and constant!) number of unique sets of $\sym$'s.
+		\item Explore the treshold for $d$ for the regularities to occur and understand the structure that triggers it (like relationship of $d$ and $t$).
+		\item Experiment with different inputs, different $t$'s and different $\ell$'s.
+	\end{enumerate}
+	
+	
+	\newpage
+	\section{Sources}
+	TODO replace this with proper \LaTeX $ $ $ $sources.
+	
+	\begin{enumerate}
+		\item Advent of code, \url{https://adventofcode.com/2020/day/17}
+		\item {}[Day 17] Getting to t=6 at for higher $<$spoilers$>$'s \url{https://www.reddit.com/r/adventofcode/comments/kfb6zx/day_17_getting_to_t6_at_for_higher_spoilerss/}
+		\item github.com/MichalMarsalek, \url{https://github.com/MichalMarsalek/Advent-of-code/tree/master/2020/misc/day17-highdims}
+	\end{enumerate}
+\end{document}
+
