@@ -1,4 +1,5 @@
 import sets, tables, intsets,  times, os, strutils, sequtils, math
+import bigints
 
 ## Each point is represented as a triple:
 ## (x, y, sym)
@@ -135,40 +136,35 @@ proc nxt(grid: Grid, round: int): Grid =
 # Final result calculation
 # Only relevant as long as it fits in 64 bits (d <= 25)
 
-func factorial(n:int):(uint64, int) =
-    ## Returns (o mod 2^64, e) where o is odd and n! = o × 2^e
-    var o: uint64 = 1
-    var e: int = 0
+func factorial(n:int):BigInt =
+    ## Returns n!
+    result = initBigInt(1)
     for i in 1..n:
-        var j = i.uint64
-        while j mod 2 == 0:
-            j = j shr 1
-            e += 1
-        o *= j
-    return (o,e)
+        result *= i.int32
 
-func inverse(x:uint64):uint64 =
-    ## Given odd x returns x^(-1) mod 2^64.
-    result = x
-    for _ in 1..5:
-        result *= (2 - result*x)
-
-proc weight(a:Sym):uint64 =
+proc weight(a:Sym):BigInt =
     ## Returns a weight of a coset for final calculation.
     ## Weight is number of distinct permutations times 2^(number of nonzeroes).
-    ## Calculation is done mod 2^64 (except for division by 2 of course - powers
-    ## of two are handled separately.
     
     let sym = a.unpack
-    var (o,e) = factorial(k)
+    result = factorial(k)
     for q in sym:
-        let (o2, e2) = factorial(q)
-        o *= inverse(o2)
-        e -= e2
-    result = o shl (e + k-sym[0])
+        result = result div factorial(q)
+    result = result shl (k-sym[0])
+
+proc finalAnswer(grid:Grid):BigInt =
+    for x in 0..<20:
+        for y in 0..<20:
+            for sym in grid[x][y]:
+                result += sym.weight
+
+func countCosets(grid:Grid): int =
+    for x in 0..<20:
+        for y in 0..<20:
+            result += grid[x][y].len
 
 # Benchmarking different dimensions
-for DIM in 3..40:
+for DIM in countup(25,30):
     k = DIM-2
     STACK_NEIGBOURS_MEMO = initTable[Stack, CountTable[Sym]]()
 
@@ -189,18 +185,10 @@ for DIM in 3..40:
         grid = grid.nxt(round)
 
     echo "Dim: ", DIM
-    echo "Computation time taken: ", cpuTime() - time
+    echo "Time: ", cpuTime() - time
     echo "Unique stacks: ", STACK_NEIGBOURS_MEMO.len
-    var cosets: int
-    if DIM <= 25:
-        var final_result: uint64
-        for x in 0..<20:
-            for y in 0..<20:
-                final_result += grid[x][y].toSeq.map(weight).sum
-                cosets += grid[x][y].len
-        echo "Result: ", final_result
-        echo "Unique cosets: ", cosets
-    else:
-        echo "Final result doesn't fit into 64 bits."
+    echo "Unique cosets: ", grid.countCosets
+    echo "Result: ", grid.finalAnswer
+    echo ""
         
 discard stdin.readLine
