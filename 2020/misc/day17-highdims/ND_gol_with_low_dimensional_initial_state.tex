@@ -39,15 +39,16 @@
 	\begin{abstract}
 		This document summarises results and ideas from a reddit thread about a generalised version of a problem from Advent of code. This problem is about a Game of life, a 0-player game invented by John Conway. In this case we are in a setting of high dimensions but with special initial conditions that give rise to many interesting patterns and structures.
 	\end{abstract}
+\footnotetext{This document contains some hyperlinks. If you are previewing this document on github, they will not be clickable, so we recommend to download the pdf.}
 \newpage
 	
 	\section{Description of the problem}
 	
 	\subsection{Game of life}
 	
-	Let $d\in\NN$. Consider the space $\ZZ ^d$. Each element of this space is called a \emph{cell} and each subset of this space is called a \emph{state}. If cell $x \in S \subset \ZZ^d$, we say that cell $x$ is \emph{alive}, otherwise, we say that it's \emph{dead}.
+	Let $d\in\NN$. Consider the space $\ZZ ^d$. Each element of this space is called a \emph{cell} and each subset of this space is called a \emph{state}. If cell $c \in S \subset \ZZ^d$, we say that cell $c$ is \emph{alive}, otherwise, we say that it's \emph{dead}.
 	
-	Let $a,b \in \ZZ^d$. If $\max |a_i - b_i| \leq 1$, we say that cells $a$ and $b$ are neighbours. By $\neigh(a)$ we denote all neigbours of $b$.\\
+	Let $b,c \in \ZZ^d$. If $\max |b_i - c_i| \leq 1$, we say that cells $b$ and $c$ are neighbours. By $\neigh(c)$ we denote all neigbours of $c$.\\
 	Note: in this notation we consider a cell to be a neighbour of itself. That is each cell has exactly $3^d$ neighbours.
 	
 	\emph{Game of life} is a mapping from states to states,
@@ -71,8 +72,9 @@
 		if a cell is dead and has $n \in \calD$ alive neighbours it comes to life, otherwise it remains dead.
 	\end{itemize}
 	
-	By \emph{Game of life with initial state} we mean a pair $(S_0, \nxt_{\calA, \calD})$ uniquely generating a sequence
-	$$S_{i+1} = \nxt_{\calA, \calD}(S_i).$$
+	By \emph{Game of life with initial state} we mean a pair $(\nxt_{\calA, \calD}, S_0)$. Such pair uniquely determines the sequence
+	$$ \{S_i\}_{i=0}^\infty,\quad S_{i+1} = \nxt_{\calA, \calD}(S_i), i \geq 0$$
+	we call this sequence an \emph{evolution} of the Game of life.
 	
 	\subsection{Low dimensional initial state and problem statement}
 	
@@ -91,7 +93,8 @@
 	\subsection{Generalisation/specialisation}
 	This problem is a generalisation of \href{https://adventofcode.com/2020/day/17}{Advent of code - year 2020 - day 17}.
 	
-	In this state of the research/experimenting we focus on the cases of $\ell = 2, t=6$, $\widehat{S_0} \subset \{6,\dots,13\}^2$.
+	In this state of the research/experimenting we focus on the cases of 
+	$$\ell = 2, t=6, \widehat{S_0} \subset \{6,\dots,13\}^2, \calA = \{3,4\}, \calD = \{3\}.$$
 	
 	\newpage
 	\section{Solution methods}
@@ -104,7 +107,7 @@
 			\Input{$d, \calA, \calD, \widehat{S_0}, t$}
 			\Output{solution}
 			\Function{nxt}{$S \subset \ZZ^d$}
-			\State $counter \gets \text{empty table}(\ZZ^d)\to \NN \text{ with default value = 0}$
+			\State $counter \gets \text{empty table}(\ZZ^d\to \NN) \text{ with default value = 0}$
 			\State $result \gets \{\}$
 			\ForAll{$a \in S$}
 			\ForAll{$b \in \Call{neigh}{a}$}
@@ -157,7 +160,7 @@
 	
 	Verification of this fact as well as the fact that $\simeq$ is equivalence is left as an exercise for the reader.
 	
-	With this knowledge we can devise a much more efficient algorithm by only tracking\\which cosets $[A] \in \calP[\ZZ^d] /\simeq$ are alive.
+	With this knowledge we can devise a much more efficient algorithm by only tracking\\which cosets $[A] \in \calP(\ZZ^d) /\simeq$ are alive.
 	
 	First, we need to solve two problems:
 	\begin{enumerate}
@@ -166,23 +169,27 @@
 	\end{enumerate}
 
 	\subsubsection{Determining the size of a coset}
-	Consider the function $\finalw(\gen,\sym) = |[(\gen,\sym)]|$. A quick thought tells us, that
-	$$\finalw(\sym) = 2^{k-\varphi(\sym)(0)}\frac{k!}{\prod_{i=0}^\infty \varphi(\sym)(i)!}.$$
+	The final size of a coset only depends on the symmetric component. That is
+	$$|[(\gen,\sym)]| = \finalw(\varphi(\sym)),$$
+	where
+	$$\finalw: \varphi(\ZZ^k) \to \NN^+, \finalw(s) = 2^{k-s(0)}\frac{k!}{\prod\limits_{i \in s} s(i)!}.$$
 
 	In another words it is the number of distinct permutations multiplied by 2 for each nonzero coordinate.
 	
 	\subsubsection{Counting neighbours}
 	The nontrivial part is handling the neighbours in the symmetric component.
-	Neighbours of $\sym \in \ZZ^k$ are exactly such points that we get by decrementing some coordinates by one and incrementing some coordinates by one. In the $\varphi$ representation, it manifests as some amount of $i$'s changing to $i-1$'s and some amount changing to $i+1$'s. Note that in this representation 0's can only change to 1's but this action can be a manifestation of two different changes in $\ZZ^k$ ($0 \to -1$ and $0 \to +1$).
+	Neighbours of $\sym \in \ZZ^k$ are exactly such points that we get by decrementing some coordinates by one and incrementing some coordinates by one. In the $\varphi$ representation, it manifests as some amount of $i$'s changing to $(i-1)$'s and some amount changing to $(i+1)$'s. Note that in this representation 0's can only change to 1's but this action can be a manifestation of two different changes in $\ZZ^k$ ($0 \to -1$ and $0 \to +1$).
 	
 	Furthermore in the $\varphi$ representation, some changes can cancel out, yielding the same element.
-	For example $(1,2)$ neighbours $(2,1,1)$ but $\varphi((1,2,1)) = \{*\,1,1,2\,*\} = \varphi((2,1,1))$.
+	For example $(1,2,1)$ neighbours $(2,1,1)$ but $\varphi((1,2,1)) = \{*\,1,1,2\,*\} = \varphi((2,1,1))$.
 	In a similar way a set of different changes to a point can all produce the same point in the $\varphi$ representation that nevertheless differs from the original point (like $(1,1) \to (1,2)$ and $(1,1) \to (2,1)$ where
 	$\varphi((1,2)) = \varphi((2,1)) \ne \varphi((1,1))$.
 	
 	Consider $s \in \varphi(\ZZ^k)$ representing a symmetrical component of a state after $t$ time steps.\\
 	Then
-	$$s \in \NN_0^{\{0..t\}}, \sum_{i=0}^t s(i) = k$$.
+	$$s \in \NN_0^{\{0..t\}}.$$
+	
+	In another words, $s$ can only contain numbers $0..t$.
 	
 	Let $L_i \in \NN_0, i=1..t-1$ denote the number $i$'s in $s$ that change to $(i-1)$'s.	
 	
@@ -255,8 +262,8 @@
 			\State $counter \gets \text{empty table}(\ZZ^\ell \times \varphi(\ZZ^k)\to \NN) \text{ with default value = 0}$
 			\State $result \gets \{\}$
 			\ForAll{$(\gen_1, \sym_1) \in S$}
-			\ForAll{$\gen_2 \in \Call{neigh}{\gen_1}$}
 			\ForAll{$(\sym_2,w) \in \Call{getNeighbours}{\sym_1}$}
+			\ForAll{$\gen_2 \in \Call{neigh}{\gen_1}$}
 			\State $counter[(\gen_2, \sym_2)] \gets counter[(\gen_2, \sym_2)] + w$
 			\EndFor
 			\EndFor
@@ -290,7 +297,7 @@
 	
 	$ $
 	
-	We can pack the symmetric part $s \in \varphi(\ZZ^k)$ into a single $(t+1)\log_2(k)$ bit integer. Furthermore we pack it together with the asymmetric part.
+	We can pack the symmetric part $s \in \varphi(\ZZ^k)$ into a single $(t+1)\log_2(k)$ bit integer. Furthermore we can pack it together with the asymmetric part.
 	
 	$ $
 	
@@ -305,16 +312,16 @@
 	\subsection{Further structure}
 	While playing around with the problem we noticed several interesting facts about the structure of the states in the Game of life with low dimensional initial state.
 	\begin{enumerate}
-		\item For higher dimensions, final number of active cosets after given number of time steps $t$ follows a exact pattern. For one of the inputs:
-		\begin{enumerate}
+		\item For higher dimensions, final number of active cosets after given number of time steps $t$ follows an exact pattern. For one of the inputs:
+		\begin{itemize}
 			\item At $t=1$, a linear progression $21d - 15$ starting from $d=2$,
 			\item At $t=2$, a constant number $48$ starting from $d=4$,
 			\item At $t=3$, a quadratic progression $15.5d^2 + 29.5d - 166$ starting from $d=4$,
 			\item At $t=4$, a constant number $147$ starting from $d=7$,
 			\item At $t=5$, a quadratic progression $51d^2 - 62d - 173$ starting from $d=7$,
 			\item At $t=6$, a quadratic progression $d^2 + 109d + 70$ starting from $d=7$.
-		\end{enumerate}
-		What is more the 147 cosets after are the same points (modulo some transformation for making the dimensions work).
+		\end{itemize}
+		What is more the 147 cosets are the same indepent of $d$ (modulo some transformation for making the dimensions work).
 		This point enables us to:
 		\begin{enumerate}
 			\item Predict the number of active cosets for any $d$ in virtually no time.
@@ -334,23 +341,23 @@
 	\subsection{Intermezzo: counting permutations}
 	When going from the final alive cosets to the final answer we need to count distinct permutations of a multiset.
 	
-	Every highschooler should know, that number of distinct permutations of a multiset $m \in \calA ^{\NN_0}$ is equal to 
+	Every highschooler should know, that number of distinct permutations of a multiset $m \in \mathcal X ^{\NN_0}$ is equal to 
 	
 	$$\frac{|m|!}{\prod_{x\in m} m(x)!}$$
 	
 	In our case $|m| = k = d-2$.
 	Using this formula directly works for lower dimensions like $d=10$ but as soon as $k \geq 21$ ($d \geq 23$) we hit a problem!
 	$$21! > 2^{64}$$
-	In another words $k!$ (an intermediate value in our computation doesn't fit into a uint64). If you are using a language with buildin bigints like Python or Haskell, you don't care and if your aren't you have to look for a bigint library. Or do you?
+	In another words $k!$ (an intermediate value in our computation) \emph{does not fit} into a uint64. If you are using a language with build-in bigints like Python or Haskell, you do not care and if your are not, you have to look for a bigint library. Or do you?
 	
-	The final answer might be orders of magnitude smaller since we are dividing $|m|$ by other factorials. As long as the \emph{final answer} fits into 64 bits, we can do the whole calculation without needing a larger register.
+	The final answer might be orders of magnitude smaller since we are dividing $|m|!$ by other factorials. As long as the \emph{final answer} fits into 64 bits, we can do the whole calculation without needing a larger register.
 	
-	Instead of first doing all the multiplications $1 \cdot 2\cdot 3\cdot \dots\cdot |m|$ and only then proceed to division, you can permute the order of multiplications and divisions to always stay below $2^{64}-1$. However this approach gets mess, there's a more elegant way.
+	Instead of first doing all the multiplications $1 \cdot 2\cdot 3\cdot \dots\cdot |m|$ and only then proceed to division, you can permute the order of multiplications and divisions to always stay below $2^{64}-1$. However this approach gets messy, there is a more elegant way.
 	
 	\subsubsection{Modular arithmetics}
 	We would like to do the calculations modulo some big number $n$. Option of $n=2^{64}-59$ comes to mind, since it is a prime number. Primes are useful since for prime $n$, $\ZZ/n\ZZ \simeq \ZZ_n$ is a field which means that everything is nice and you can add, substract, multiply and divide any two elements (apart from division by 0 of course). But computers actually operate modulo $2^{64}$ (or $2^{32}$) and this double modulo would get messy.
-	Instead we will stick to calculations modulo $2^{64}$. Now there's the problem that some numbers (specifically even numbers) are not invertible. Yet, we need to divide by even numbers in our formula for counting permutations. This is not a major problem tho, as we can just handle the 2's separately. We will simply multiply and divide only the odd components of numbers and record what exponent of two should be applied at the end. After all in our case  we need to multiply the result by some power of two anyway... And multiplying by a power of two is just a binary shift...
-	How do we calculate the multiplicative inverse? The standard procedure is the Extended Euclidean algorithm. However, for cases of $n$ = $\rho^r$, one can use one of Peter Mongomery's algorithms.
+	Instead we will stick to calculations modulo $2^{64}$. Now there's the problem that some numbers (specifically even numbers) are not invertible. Yet, we need to divide by even numbers in our formula for counting permutations. This is not a major problem though, as we can just handle the 2's separately. We will simply multiply and divide only the odd components of numbers and record what exponent of two should be applied at the end. After all in our case  we need to multiply the result by some power of two anyway... And multiplying by a power of two is just a binary shift...
+	How do we calculate the multiplicative inverse? The standard procedure is the Extended Euclidean algorithm. However, for cases of $n$ = $\rho^r$, one can use one of Peter Montgomery's algorithms:
 	
 	Let $x \in \ZZ_{64}^*$ (odd 64 bit integer). Let $f_x(y) = y(2-yx)$. Then $x^{-1} = f_x^5(x) \pmod{2^{64}}$. Impressive, right?
 	
@@ -358,13 +365,66 @@
 	
 	So what did we get? We can now calculate the result for $23 \leq d \leq 25$, after that the final result doesn't fit into 64 bits. In the end we need to still look for a bigints library.... Nevertheless I think that this exercise/intermezzo is interesting.
 	
+	Implementation of this method can be found in \href{https://github.com/MichalMarsalek/Advent-of-code/blob/85791de9441271794a4809e59cb139d7f88bc33f/2020/misc/day17-highdims/nd_gol_sym3_single.nim#L137-L167}{nd\_gol\_sym3\_single.nim}
+	
+	\newpage
 	\subsection{Using cummulative effects of sets of cosets}
-	TODO
+	Consider the following algorithm:
+	\begin{algorithm}
+		\caption{Using symmetries + cummulative effects}
+		\begin{algorithmic}
+			\Input{$d, \calA, \calD, \widehat{S_0}, t$}
+			\Output{solution}
+			\Function{getNeighbours}{$s \in \varphi(\ZZ^k)$}
+			\State as before
+			\EndFunction
+			
+			\Function{getSetNeighbours}{$stack \in \calP(\varphi(\ZZ^k))$}
+			\State $counter \gets \text{empty table}(\varphi(\ZZ^k)\to \NN) \text{ with default value = 0}$
+			\ForAll{$s \in stack$}
+			\ForAll{$(c, w) \in \Call{getNeigbours}{s}$}
+			\State $counter[c] \gets counter[c] + w$
+			\EndFor
+			\EndFor
+			\State \Return $counter$
+			\EndFunction
+			
+			\Function{nxt}{$S \subset \ZZ^\ell \times \varphi(\ZZ^k)$}
+			\State $counter \gets \text{empty table}(\ZZ^\ell \times \varphi(\ZZ^k)\to \NN) \text{ with default value = 0}$
+			\State $result \gets \{\}$
+			\ForAll{$\gen_1 \in \ZZ^\ell$}
+			\State $stack \gets \{s; (g,s) \in S \land g = \gen_1\}$
+			\ForAll{$(\sym_2,w) \in \Call{getSetNeighbours}{stack}$}
+			\ForAll{$\gen_2 \in \Call{neigh}{\gen_1}$}
+			\State $counter[(\gen_2, \sym_2)] \gets counter[(\gen_2, \sym_2)] + w$
+			\EndFor
+			\EndFor
+			\EndFor
+			
+			\ForAll{$(a, neigh\_count) \in counter$}
+			\If{$(a \in S \land neigh\_count \in \calA) \lor (a \not\in S \land neigh\_count \in \calD)$}
+			\State $result \gets result \cup \{a\}$
+			\EndIf
+			\EndFor
+			\State \Return $result$
+			\EndFunction
+			
+			\State $S \gets \widehat{S_0} \times \{*\,0^k\,*\}$
+			\ForAll{$i=1..t$}
+			\State $S \gets \Call{nxt}{S}$
+			\EndFor
+			\State \Return $\sum\limits_{(\gen,\sym) \in S} \Call{final\_w}{\sym}$
+			
+		\end{algorithmic}
+	\end{algorithm}
+
+Written as it is, it is exactly the same as Algorithm 2, we just grouped together cosets that share the asymmetric part. The speed up stems from the fact that calls to  $\Call{getSetNeighbours}$ can be memoized and the number of different arguments to this function seems to be constant with growing $d$.
 	
 	\subsubsection{Technical details}
 	
 	This version is implemented in \href{https://github.com/MichalMarsalek/Advent-of-code/blob/master/2020/misc/day17-highdims/nd_gol3.nim}{nd\_gol4.nim} and solves $d=10$ in 0.1 seconds, $d=20$ in 5 seconds, $d=30$ in 1 minute, $d=40$ in 8 minutes and $d=50$ in half an hour.
 	
+	\newpage
 	\section{Open questions}
 	\begin{enumerate}
 		\item Proof of quadratic progressions of coset counts.

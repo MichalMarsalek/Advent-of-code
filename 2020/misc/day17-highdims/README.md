@@ -1,9 +1,8 @@
 Generalisation of [Advent of Code - 2020 day 17](https://adventofcode.com/2020/day/17) to higher dimensions.
 
-Works by defining the following equivalence:
-X = Y if {\*|X_i|; i = 3..d \*} = {\*|Y_i|; i = 3..d \*}
-and noting that equivalent cells are either all active or all inactive. Hence, we only track the cosets [X].
-See [reddit thread regarding this topic](https://www.reddit.com/r/adventofcode/comments/kfb6zx/day_17_getting_to_t6_at_for_higher_spoilerss/).
+See [report about this problem](https://github.com/MichalMarsalek/Advent-of-code/blob/master/2020/misc/day17-highdims/ND_gol_with_low_dimensional_initial_state.pdf)
+or
+visit [reddit thread regarding this topic](https://www.reddit.com/r/adventofcode/comments/kfb6zx/day_17_getting_to_t6_at_for_higher_spoilerss/).
 
 * *nd_gol.nim* is a bruteforce version (d=7 in 4 minutes).
 * *nd_gol_sym.nim* is a version using symmetries and precomputation (d=16 in under 3 minutes)
