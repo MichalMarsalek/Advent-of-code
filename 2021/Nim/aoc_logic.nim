@@ -1,5 +1,5 @@
 include prelude
-import re, macros, httpclient, net, algorithm
+import re, macros, httpclient, net, algorithm, times
 
 var SOLUTIONS*: Table[int, proc (x:string):Table[int,string]]
 
@@ -26,7 +26,6 @@ template day*(day:int, solution:untyped):untyped =
         SOLUTIONS[day] = proc (input: string):Table[int,string] =
             var input   {.inject.} = input
             var ints    {.inject.} = input.ints
-            var intgrid {.inject.} = input.intgrid
             var lines   {.inject.} = input.splitLines
             var parts   {.inject.}: Table[int, proc ():string]
             solution
@@ -55,7 +54,10 @@ proc getInput(day: int): string =
     return input        
 
 proc run*(day: int) =
+    let start = cpuTime()
     let results = SOLUTIONS[day](getInput day)
+    let finish = cpuTime()
     echo "Day "& $day
     for k in results.keys.toSeq.sorted:
         echo fmt" Part {k}: {results[k]}"
+    echo fmt" Time: {finish-start:.2} s"

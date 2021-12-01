@@ -25,7 +25,7 @@ day 1:
 ```
 both work equally well.  
 Each `day` block defines a function `string --> Table[int, string]` that on given input solves both parts. Furthermore, if `isMainModule` it downloads the input (unless it is already present on disk), calls the solution on the input and prints the results.
-The input is implicit in an injected `input` variable as well as in `ints` variable (which comprises of parsed integers present anywhere in the input) and `intgrid` variable (matrix of ints).  
+The input is implicit in an injected `input` variable as well as in `ints` variable (which comprises of parsed integers present anywhere in the input).  
 The solution function is also stored in `SOLUTIONS[day]`.  
 Instead of `part 1:` you can do `part 1,int` and specify the output type of the part. This is useful because it gives you an autoinitialized `result`. Parts other than 1 and 2 are supported.
 The `aoc` module apart from implementing these templates, includes `prelude`, `algorithm` and `math`.
