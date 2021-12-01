@@ -1,7 +1,7 @@
 include prelude
-import re, macros, httpclient, net
+import re, macros, httpclient, net, algorithm
 
-var SOLUTIONS*: Table[int, proc (x:string):(string, string)]
+var SOLUTIONS*: Table[int, proc (x:string):Table[int,string]]
 
 const
  directions8 = [(-1, -1), (0, -1), (1, -1), (1, 0), (1, 1), (0, 1), (-1, 1), (-1, 0)]
@@ -23,23 +23,24 @@ func intgrid*(data:string): seq[seq[int]] =
 
 template day*(day:int, solution:untyped):untyped =
     block:
-        SOLUTIONS[day] = proc (input: string):(string,string) =
+        SOLUTIONS[day] = proc (input: string):Table[int,string] =
             var input   {.inject.} = input
             var ints    {.inject.} = input.ints
             var intgrid {.inject.} = input.intgrid
             var lines   {.inject.} = input.splitLines
-            solution        
-            return ($part1Proc(), $part2Proc())
+            var parts   {.inject.}: Table[int, proc ():string]
+            solution
+            for k,v in parts:
+                result[k] = $v()
         
     if isMainModule:
         run day
 
-template part1*(t=auto, solution:untyped):untyped =
-    proc part1Proc():t =
-        solution
-template part2*(t=auto, solution:untyped):untyped =
-    proc part2Proc():t =
-        solution
+template part*(p:int, t=auto, solution:untyped):untyped =
+    parts[p] = proc ():string =
+        proc inner():t =
+            solution
+        return $inner()
 
 proc getInput(day: int): string =
     let filename = fmt"inputs\\day{day}.in"
@@ -55,6 +56,6 @@ proc getInput(day: int): string =
 
 proc run*(day: int) =
     let results = SOLUTIONS[day](getInput day)
-    echo fmt"""Day {day}
-    Part 1: {results[0]}
-    Part 2: {results[1]}"""
+    echo "Day "& $day
+    for k in results.keys.toSeq.sorted:
+        echo fmt" Part {k}: {results[k]}"
