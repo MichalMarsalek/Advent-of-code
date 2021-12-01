@@ -3,6 +3,11 @@ import re, macros, httpclient, net
 
 var SOLUTIONS*: Table[int, proc (x:string):(string, string)]
 
+const
+ directions8 = [(-1, -1), (0, -1), (1, -1), (1, 0), (1, 1), (0, 1), (-1, 1), (-1, 0)]
+ directions4 = [(0, -1), (1, 0), (0, 1), (-1, 0)]
+
+
 func drop[T](s: seq[T], d: int):seq[T] = s[d..^1]
 
 func grid*(data:string, sep:string = ""): seq[seq[string]] =
