@@ -22,14 +22,14 @@ import bigints
 
 const ROUNDS = 6
 var DIM, k: int
-type Sym = uint64
+type Sym = int
 type Stack = HashSet[Sym]
 type Grid = array[20, array[20, Stack]]
 
 # packing/unpacking
 func pack(sym: array[7, int]): Sym =
     for i in 0..6:
-        result = (result shl 8) xor sym[6-i].uint64
+        result = (result shl 8) xor sym[6-i]
 
 func unpack(packed:Sym): array[7, int] =
     var packed = packed
@@ -55,7 +55,7 @@ func pos(a:int):int {.inline.} =
     ## Returns the positive part of a number.
     max(a,0)
 
-func getNeighbours(xx: Sym): seq[(Sym, int)] =
+proc getNeighbours(xx: Sym): seq[(Sym, int)] =
     ## Generates all neigbours of given cell with weights.
     ## Does so by considering how much of each occurence of 0s,...6s increases and decreases.
     ## L[i] ... how many i's changed to i-1
@@ -78,7 +78,6 @@ func getNeighbours(xx: Sym): seq[(Sym, int)] =
                                     x[5] + s4 - s5,
                                     + s5]
                             var ways:int
-                            # This should be optimized and calculated without iteration
                             # If it's a big number (> 4) I don't need to know how large it is
                             block slow: 
                                 for R0 in pos(s0)..x[0]:
@@ -163,8 +162,16 @@ func countCosets(grid:Grid): int =
         for y in 0..<20:
             result += grid[x][y].len
 
+func countAllCosets(k: int): int =
+    for a0 in 0..k:
+        for a1 in 0..k-a0:
+            for a2 in 0..k-a1-a0:
+                for a3 in 0..k-a2-a1-a0:
+                    for a4 in 0..k-a3-a2-a1-a0:
+                        result += k-a4-a3-a2-a1-a0 + 1
+
 # Benchmarking different dimensions
-for DIM in countup(25,30):
+for DIM in countup(2,20):
     k = DIM-2
     STACK_NEIGBOURS_MEMO = initTable[Stack, CountTable[Sym]]()
 
@@ -181,14 +188,16 @@ for DIM in countup(25,30):
 
     # Run computation
     let time = cpuTime()
+    echo "Dim: ", DIM
     for round in 1..ROUNDS:
         grid = grid.nxt(round)
-
-    echo "Dim: ", DIM
+        echo "Round ", round, " coset count: ", grid.countCosets
+    
     echo "Time: ", cpuTime() - time
-    echo "Unique stacks: ", STACK_NEIGBOURS_MEMO.len
-    echo "Unique cosets: ", grid.countCosets
+    #echo "Unique stacks: ", STACK_NEIGBOURS_MEMO.len
+    #echo "Unique cosets: ", grid.countCosets
     echo "Result: ", grid.finalAnswer
+    echo "Total sym cosets: ", countAllCosets(k)
     echo ""
-        
+
 discard stdin.readLine

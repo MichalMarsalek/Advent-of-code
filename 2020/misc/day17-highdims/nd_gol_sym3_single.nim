@@ -1,4 +1,4 @@
-import sets, tables, intsets,  times, os, strutils, sequtils, math
+import sets, tables, intsets,  times, os, strutils, sequtils, math, algorithm
 
 ## Each point is represented as a triple:
 ## (x, y, sym)
@@ -176,7 +176,7 @@ for DIM in 3..20:
     for line in input.lines:
       for i, col in line:
         if col == '#':
-            grid.add(pack2(10+i, 10+row, k))
+            grid.add(pack2(6+i, 6+row, k))
       inc row
     input.close()
 

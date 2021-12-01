@@ -1,6 +1,6 @@
 import sets, tables, intsets,  times, os, math, strutils
 
-const DIM = 4
+const DIM = 6
 const k = DIM-2
 const ROUNDS = 6
 const REG_SIZE = 5
