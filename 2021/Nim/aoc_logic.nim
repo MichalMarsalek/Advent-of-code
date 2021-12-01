@@ -24,16 +24,16 @@ template day*(day:int, solution:untyped):untyped =
             var intgrid {.inject.} = input.intgrid
             var lines   {.inject.} = input.splitLines
             solution        
-            return ($part1Proc(input), $part2Proc(input))
+            return ($part1Proc(), $part2Proc())
         
     if isMainModule:
         run day
 
 template part1*(t=auto, solution:untyped):untyped =
-    proc part1Proc(input: string):t =
+    proc part1Proc():t =
         solution
 template part2*(t=auto, solution:untyped):untyped =
-    proc part2Proc(input: string):t =
+    proc part2Proc():t =
         solution
 
 proc getInput(day: int): string =
