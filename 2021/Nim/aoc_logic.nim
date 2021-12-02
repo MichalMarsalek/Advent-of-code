@@ -1,5 +1,5 @@
 include prelude
-import re, macros, httpclient, net, algorithm, times
+import re, macros, httpclient, net, algorithm, times, math
 
 var SOLUTIONS*: Table[int, proc (x:string):Table[int,string]]
 
@@ -62,3 +62,29 @@ proc run*(day: int) =
     for k in results.keys.toSeq.sorted:
         echo fmt" Part {k}: {results[k]}"
     echo fmt" Time: {finish-start:.2} s"
+
+func modInv*(a0, modulus: int): int =
+  var (a, b, x0) = (a0, modulus, 0)
+  result = 1
+  if b == 1: return
+  while a > 1:
+    result = result - (a div b) * x0
+    a = a mod b
+    swap a, b
+    swap x0, result
+  if result < 0: result += modulus
+
+func modSum*(data: openarray[int], modulus:int): int =
+    for x in data:
+        result = (result + x) mod modulus
+
+func modProd*(data: openarray[int], modulus:int): int =
+    result = 1
+    for x in data:
+        result = (result * x) mod modulus
+
+func CRT*(data: seq[(int, int)]): int =
+    var big_mod = data.mapIt(it[1]).prod
+    for v, m in data.items:
+        let p = big_mod div m
+        result = (result + v * modInv(p, m) * p) mod big_mod
