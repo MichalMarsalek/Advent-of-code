@@ -83,7 +83,7 @@ func modProd*(data: openarray[int], modulus:int): int =
     for x in data:
         result = (result * x) mod modulus
 
-func CRT*(data: seq[(int, int)]): int =
+func crt*(data: seq[(int, int)]): int =
     var big_mod = data.mapIt(it[1]).prod
     for v, m in data.items:
         let p = big_mod div m

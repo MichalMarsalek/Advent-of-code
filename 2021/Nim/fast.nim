@@ -11,19 +11,31 @@ for day in 1..days:
     INPUTS[day] = readFile("inputs\\day" & $day & ".in")
 
 
+
+            
+
 SOLUTIONS[1] = proc (input: string):(string, string) =
-    func lt(a,b:string): bool =
+    type part = tuple[start: int, len: int]
+    func mySplit2(text:string):seq[part] =
+        var start = 0
+        for i in 0..text.high:
+            if text[i] == '\n':
+                result.add (start, i-start)
+                start = i+1
+    proc lt2(a,b:part): bool =
         if a.len < b.len: return true
         if a.len > b.len: return false
-        return a < b
+        for i in 0..<a.len:
+            if input[a.start + i] < input[b.start + i]: return true
+            if input[a.start + i] > input[b.start + i]: return false
     let start = getTime()
-    var parts = input.split
+    var parts = input.mySplit2 # idk why but strutils.split is just so slow
     var p1,p2 = 0
-    if parts[0] .lt parts[1]: inc p1
-    if parts[1] .lt parts[2]: inc p2
+    if parts[0] .lt2 parts[1]: inc p1
+    if parts[1] .lt2 parts[2]: inc p1
     for i in 3..<parts.len:
-        if parts[i-1] .lt parts[i]: inc p1
-        if parts[i-3] .lt parts[i]: inc p2
+        if parts[i-1] .lt2 parts[i]: inc p1
+        if parts[i-3] .lt2 parts[i]: inc p2
     return ($p1, $p2)
 
 SOLUTIONS[2] = proc (input: string):(string, string) =
