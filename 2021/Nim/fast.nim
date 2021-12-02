@@ -28,7 +28,6 @@ SOLUTIONS[1] = proc (input: string):(string, string) =
         for i in 0..<a.len:
             if input[a.start + i] < input[b.start + i]: return true
             if input[a.start + i] > input[b.start + i]: return false
-    let start = getTime()
     var parts = input.mySplit2 # idk why but strutils.split is just so slow
     var p1,p2 = 0
     if parts[0] .lt2 parts[1]: inc p1

@@ -54,5 +54,5 @@ Apart from the general solutions I try to write separate speedy solutions (fast.
 
 | Day             	| Mean time        	|
 |-----------------	|---------------	|
-| 1              	| 0.052 ms       	|
+| 1              	| 0.046 ms       	|
 | 2              	| 0.001 ms       	|
