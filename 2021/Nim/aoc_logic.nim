@@ -24,7 +24,8 @@ func intgrid*(data:string): seq[seq[int]] =
 template day*(day:int, solution:untyped):untyped =
     block:
         SOLUTIONS[day] = proc (input: string):Table[int,string] =
-            var input   {.inject.} = input
+            var inputRaw{.inject.} = input
+            var input   {.inject.} = input.strip
             var ints    {.inject.} = input.ints
             var lines   {.inject.} = input.splitLines
             var parts   {.inject.}: Table[int, proc ():string]
