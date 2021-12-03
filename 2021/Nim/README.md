@@ -56,6 +56,6 @@ Apart from the general solutions I try to write separate speedy solutions (fast.
 |-----------------	|---------------	|
 | 1              	| 0.046 ms       	|
 | 2              	| 0.001 ms       	|
-| 3              	| 0.089 ms       	|
+| 3              	| 0.032 ms       	|
 
-Total: 0.136 ms
+Total: 0.079 ms
