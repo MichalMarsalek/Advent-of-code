@@ -1,7 +1,7 @@
 include prelude
 import times
 
-const days = 2
+const days = 3
 const repetitions = 1000
 var SOLUTIONS: array[26,proc (input:string):(string,string)]
 var INPUTS: array[26,string]
@@ -47,6 +47,57 @@ SOLUTIONS[2] = proc (input: string):(string, string) =
         else:
             let X = input[i+8].ord - 48; x += X; y += aim*X; i += 10
     return ($(x*aim), $(x*y))
+
+SOLUTIONS[3] = proc (input: string):(string, string) =
+    func toInt(x: array[12,int]):int =
+        for i in 0..11:
+            result = result * 2 + x[i]
+            
+    #parsing
+    var data: seq[array[12,int]]
+    var i = 0
+    while i < input.len:
+        var number: array[12,int]
+        for j in 0..11:
+            number[j] = input[i+j].ord - 48
+        i += 13
+        data.add(number)
+    
+    #part 1
+    var most: array[12,int]
+    var least: array[12,int]
+    
+    for i in 0..11:
+        var c = 0
+        for n in data:
+            c += n[i]
+            if 2*c >= data.len: break
+        most[i] = int(2*c >= data.len)
+        least[i] = 1-most[i]
+    
+    #part 2
+    var most_data, least_data = data
+    
+    i = 0
+    while most_data.len > 1:
+        var c = 0
+        for n in most_data:
+            c += n[i]
+            if 2*c >= data.len: break
+        var most_i = int(2*c >= most_data.len)
+        most_data.keepItIf(it[i] == most_i)        
+        inc i
+    i = 0
+    while least_data.len > 1:
+        var c = 0
+        for n in least_data:
+            c += n[i]
+        var least_i = int(2*c < least_data.len)
+        least_data.keepItIf(it[i] == least_i)
+        inc i
+        
+    
+    return ($(most.toInt*least.toInt), $(most_data[0].toInt*least_data[0].toInt))
 
 
 var total_time = 0.0
