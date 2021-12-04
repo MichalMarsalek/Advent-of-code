@@ -30,8 +30,7 @@ day 4:
     
     for n in nums:
         for i in 0..<boards.len:
-            var temp = newNumber(boards_check[i], boards[i], n)
-            boards_check[i] = temp
+            boards_check[i] = newNumber(boards_check[i], boards[i], n)
             if isWin(boards_check[i]) and (i notin wins):
                 scores.add score(boards_check[i], boards[i])*n
                 wins.add i
