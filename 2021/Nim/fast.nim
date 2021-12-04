@@ -195,14 +195,16 @@ SOLUTIONS[4] = proc (input: string):(string, string) =
         for j in 0..24:
             if not checks[i][j]: result += cards[i][j]
     
-    var winners: seq[int]
+    var score1, score2 = 0
     for n in nums:
         for i in 0..<cards.len:
             if players[i]: continue
             if update(n, i):
-                winners.add i.score*n
+                score2 = i.score*n
+                if score1 == 0:
+                    score1 = score2
                 players[i] = true
-    return ($winners[0], $winners[^1])
+    return ($score1, $score2)
     
 
 
