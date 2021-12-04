@@ -1,8 +1,8 @@
 include prelude
 import times
 
-const days = 3
-const repetitions = 1000
+const days = 4
+const repetitions = 10000
 var SOLUTIONS: array[26,proc (input:string):(string,string)]
 var INPUTS: array[26,string]
 var OUTPUTS: array[26,(string,string)]
@@ -99,10 +99,6 @@ SOLUTIONS[3] = proc (input: string):(string, string) =
     return ($(most.toInt*least.toInt), $(most_data[0].toInt*least_data[0].toInt))
 
 SOLUTIONS[3] = proc (input: string):(string, string) =
-    func toInt(x: array[12,int]):int =
-        for i in 0..11:
-            result = result * 2 + x[i]
-            
     #parsing
     var data: seq[uint32]
     var i = 0
@@ -152,6 +148,62 @@ SOLUTIONS[3] = proc (input: string):(string, string) =
         dec i
         
     return ($(most*least), $(most_data[0]*least_data[0]))
+
+SOLUTIONS[4] = proc (input: string):(string, string) =
+    #parsing
+    var nums: seq[int]
+    var cards: seq[array[25, int]]
+    var checks: seq[array[25, bool]]
+    var i,n = 0
+    while input[i] != '\n':
+        n = input[i].ord - 48
+        i+=1
+        if input[i] != ',':
+            n = n*10 + (input[i].ord - 48)
+            i += 2
+        else:
+            i += 1
+        nums.add n
+    inc i
+    while i < input.len:
+        var card: array[25, int]
+        for j in 0..24:
+            if input[i] == ' ':                
+                n = input[i+1].ord - 48
+            else:
+                n = input[i+1].ord - 48 + (input[i].ord - 48)*10
+            i += 3
+            card[j] = n
+        cards.add card
+        var x:array[25, bool]
+        checks.add x
+        inc i
+    var players = newSeq[bool](cards.len)
+    
+    #game
+    proc update(n, i: int):bool =
+        for j in 0..<25:
+            if cards[i][j] == n:
+                checks[i][j] = true
+                let row = j div 5 * 5
+                let col = j mod 5
+                if allIt(0..4, checks[i][row + it]): return true
+                if allIt(0..4, checks[i][col + it*5]): return true
+                break
+    
+    proc score(i:int): int =
+        for j in 0..24:
+            if not checks[i][j]: result += cards[i][j]
+    
+    var winners: seq[int]
+    for n in nums:
+        for i in 0..<cards.len:
+            if players[i]: continue
+            if update(n, i):
+                winners.add i.score*n
+                players[i] = true
+    return ($winners[0], $winners[^1])
+    
 
 
 var total_time = 0.0
