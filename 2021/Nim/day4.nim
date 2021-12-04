@@ -1,38 +1,32 @@
 include aoc
 
 day 4:
-    proc empty(x:auto):auto =
-        mapIt(0..<5, @[false,false,false,false,false])
-    
-    proc isWin(board_check: seq[seq[bool]]):bool =
-        for i in 0..<5:
-            if allIt(0..<5, board_check[i][it]):return true
-            if allIt(0..<5, board_check[it][i]):return true
-    
-    proc score(board_check: seq[seq[bool]], board: seq[seq[int]]):int =
-        for x in 0..<5:
-            for y in 0..<5:
-                if not board_check[x][y]:
-                    result += board[x][y]
-    
-    proc newNumber(board_check: seq[seq[bool]], board: seq[seq[int]], n:int):seq[seq[bool]] =
-        result = empty(0)
-        for x in 0..<5:
-            for y in 0..<5:
-                result[x][y] = board[x][y] == n or board_check[x][y]
-    
     var
      blocks = input.split "\n\n"
      nums = blocks[0].ints
      boards = blocks[1..^1].map intgrid
-     boards_check = boards.map empty
-     scores, wins:seq[int]
+     checks = boards.map(x => mapIt(0..4, newSeq[bool](5)))
+     scores:seq[int]
+     players = toSet toSeq(0..<boards.len)
+    
+    proc update(n,i: int): bool =
+        for x in 0..<5:
+            for y in 0..<5:
+                if boards[i][x][y] == n:
+                    checks[i][x][y] = true
+                    if allIt(0..4, checks[i][x][it]): return true
+                    if allIt(0..4, checks[i][it][y]): return true
+    
+    proc score(i: int):int =
+        for x in 0..4:
+            for y in 0..4:
+                if not checks[i][x][y]:
+                    result += boards[i][x][y]
     
     for n in nums:
-        for i in 0..<boards.len:
-            boards_check[i] = newNumber(boards_check[i], boards[i], n)
-            if isWin(boards_check[i]) and (i notin wins):
-                scores.add score(boards_check[i], boards[i])*n
-                wins.add i
+        for i in players.toSeq.toSeq:
+            if update(n,i):
+                scores.add i.score*n
+                players.excl i
     part 1: scores[0]
     part 2: scores[^1]
