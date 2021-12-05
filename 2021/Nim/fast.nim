@@ -1,8 +1,8 @@
 include prelude
-import times, strscans, math
+import times, strscans, math, intsets
 
 const days = 5
-const repetitions = 100
+const repetitions = 1000
 var SOLUTIONS: array[26,proc (input:string):(string,string)]
 var INPUTS: array[26,string]
 var OUTPUTS: array[26,(string,string)]
@@ -215,7 +215,7 @@ SOLUTIONS[5] = proc (input: string):(string, string) =
             i += 1
         i += skip
         n
-    var p1, p2, c1, c2: HashSet[(int,int)]
+    var p1, p2, c1, c2: IntSet
     var total = 0
     while i < input.len:
         var x1 = scanNumber(1)
@@ -226,13 +226,14 @@ SOLUTIONS[5] = proc (input: string):(string, string) =
             total += 1
             let X = x1 + i * sgn(x2-x1)
             let Y = y1 + i * sgn(y2-y1)
+            let Z = (X shl 12) xor Y
             if x1 == x2 or y1 == y2:
-                if (X, Y) in p1:
-                    c1.incl (X,Y)
-                p1.incl (X,Y)
-            if (X, Y) in p2:
-                c2.incl (X,Y)
-            p2.incl (X,Y)
+                if Z in p1:
+                    c1.incl Z
+                p1.incl Z
+            if Z in p2:
+                c2.incl Z
+            p2.incl Z
     return ($c1.len, $c2.len)
 
 var total_time = 0.0

@@ -58,5 +58,6 @@ Apart from the general solutions I try to write separate speedy solutions (fast.
 | 2              	| 0.001 ms       	|
 | 3              	| 0.032 ms       	|
 | 3              	| 0.210 ms       	|
+| 3              	| 5.961 ms       	|
 
-Total: 0.289 ms
+Total: 6.250 ms
