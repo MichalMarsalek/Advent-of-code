@@ -236,6 +236,38 @@ SOLUTIONS[5] = proc (input: string):(string, string) =
                 c2.incl Z
             p2.incl Z
     return ($c1.len, $c2.len)
+    
+SOLUTIONS[5] = proc (input: string):(string, string) =
+    var i = 0
+    template scanNumber(skip=0):int =
+        var n = 0
+        while input[i] in Digits:
+            n = n*10 + input[i].ord - 48
+            i += 1
+        i += skip
+        n
+    var p1, p2: array[1024000, int8]
+    var total = 0
+    while i < input.len:
+        var x1 = scanNumber(1)
+        var y1 = scanNumber(4)
+        var x2 = scanNumber(1)
+        var y2 = scanNumber(1)
+
+        for i in 0..max(abs(x1-x2),abs(y1-y2)):
+            total += 1
+            let X = x1 + i * sgn(x2-x1)
+            let Y = y1 + i * sgn(y2-y1)
+            let Z = (X shl 10) xor Y
+            if x1 == x2 or y1 == y2:
+                p1[Z] += 1
+            p2[Z] += 1
+    var c1,c2 = 0
+    for x in p1:
+        if x>1: c1 += 1
+    for x in p2:
+        if x>1: c2 += 1
+    return ($c1, $c2)
 
 var total_time = 0.0
 for day in 1..days:
