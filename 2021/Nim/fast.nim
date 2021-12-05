@@ -253,7 +253,7 @@ SOLUTIONS[5] = proc (input: string):(string, string) =
         var y1 = scanNumber(4)
         var x2 = scanNumber(1)
         var y2 = scanNumber(1)
-
+        
         for i in 0..max(abs(x1-x2),abs(y1-y2)):
             total += 1
             let X = x1 + i * sgn(x2-x1)
