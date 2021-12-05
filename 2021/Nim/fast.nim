@@ -1,8 +1,8 @@
 include prelude
-import times
+import times, strscans, math
 
-const days = 4
-const repetitions = 10000
+const days = 5
+const repetitions = 100
 var SOLUTIONS: array[26,proc (input:string):(string,string)]
 var INPUTS: array[26,string]
 var OUTPUTS: array[26,(string,string)]
@@ -206,7 +206,34 @@ SOLUTIONS[4] = proc (input: string):(string, string) =
                 players[i] = true
     return ($score1, $score2)
     
-
+SOLUTIONS[5] = proc (input: string):(string, string) =
+    var i = 0
+    template scanNumber(skip=0):int =
+        var n = 0
+        while input[i] in Digits:
+            n = n*10 + input[i].ord - 48
+            i += 1
+        i += skip
+        n
+    var p1, p2, c1, c2: HashSet[(int,int)]
+    var total = 0
+    while i < input.len:
+        var x1 = scanNumber(1)
+        var y1 = scanNumber(4)
+        var x2 = scanNumber(1)
+        var y2 = scanNumber(1)
+        for i in 0..max(max(x1, x2)-min(x1, x2),max(y1, y2)-min(y1, y2)):
+            total += 1
+            let X = x1 + i * sgn(x2-x1)
+            let Y = y1 + i * sgn(y2-y1)
+            if x1 == x2 or y1 == y2:
+                if (X, Y) in p1:
+                    c1.incl (X,Y)
+                p1.incl (X,Y)
+            if (X, Y) in p2:
+                c2.incl (X,Y)
+            p2.incl (X,Y)
+    return ($c1.len, $c2.len)
 
 var total_time = 0.0
 for day in 1..days:
