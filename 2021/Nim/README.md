@@ -58,4 +58,4 @@ Apart from the general solutions I try to write separate speedy solutions (fast.
 | 2              	| 0.001 ms       	|
 | 3              	| 0.032 ms       	|
 | 4              	| 0.210 ms       	|
-| 5              	| 2.408 ms       	|
+| 5              	| 1.615 ms       	|

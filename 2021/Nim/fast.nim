@@ -261,12 +261,13 @@ SOLUTIONS[5] = proc (input: string):(string, string) =
             let Z = (X shl 10) xor Y
             if x1 == x2 or y1 == y2:
                 p1[Z] += 1
-            p2[Z] += 1
+            else:
+                p2[Z] += 1
     var c1,c2 = 0
     for x in p1:
         if x>1: c1 += 1
-    for x in p2:
-        if x>1: c2 += 1
+    for i in 0..<1024000:
+        if p1[i]+p2[i]>1: c2 += 1
     return ($c1, $c2)
 
 var total_time = 0.0
