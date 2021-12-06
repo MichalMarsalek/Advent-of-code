@@ -1,7 +1,7 @@
 include prelude
 import times, strscans, math, intsets
 
-const days = 5
+const days = 6
 const repetitions = 1000
 var SOLUTIONS: array[26,proc (input:string):(string,string)]
 var INPUTS: array[26,string]
@@ -269,6 +269,32 @@ SOLUTIONS[5] = proc (input: string):(string, string) =
     for i in 0..<1024000:
         if p1[i]+p2[i]>1: c2 += 1
     return ($c1, $c2)
+
+SOLUTIONS[6] = proc (input: string):(string, string) =
+    var i = 0
+    template scanNumber(skip=0):int =
+        var n = 0
+        while input[i] in Digits:
+            n = n*10 + input[i].ord - 48
+            i += 1
+        i += skip
+        n
+    var p1, p2 = 0
+    var counter: array[9, int]
+    while i < input.len:
+        counter[scanNumber(1)] += 1
+    
+    for i in 1..256:
+        var counter0 = counter[0]
+
+        for i in 0..7:
+            counter[i] = counter[i+1]      
+        counter[8] = counter0
+        counter[6] += counter0
+        if i == 80:
+            p1 = counter.sum
+    p2 = counter.sum
+    return ($p1, $p2)
 
 var total_time = 0.0
 for day in 1..days:

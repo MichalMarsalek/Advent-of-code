@@ -59,5 +59,6 @@ Apart from the general solutions I try to write separate speedy solutions (fast.
 | 3              	| 0.032 ms       	|
 | 4              	| 0.210 ms       	|
 | 5              	| 1.615 ms       	|
+| 6              	| 0.001 ms       	|
 
 Intel(R) Core(TM) i5-7200U CPU @ 2.50GHz   2.70 GHz
