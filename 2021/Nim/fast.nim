@@ -286,7 +286,6 @@ SOLUTIONS[6] = proc (input: string):(string, string) =
     
     for i in 1..256:
         var counter0 = counter[0]
-
         for i in 0..7:
             counter[i] = counter[i+1]      
         counter[8] = counter0
