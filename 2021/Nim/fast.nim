@@ -1,13 +1,13 @@
 include prelude
-import times, strscans, math, intsets
+import times, strscans, math, intsets, algorithm, stats
 
-const days = 6
+const days = 1..7
 const repetitions = 1000
 var SOLUTIONS: array[26,proc (input:string):(string,string)]
 var INPUTS: array[26,string]
 var OUTPUTS: array[26,(string,string)]
 
-for day in 1..days:
+for day in days:
     INPUTS[day] = readFile("inputs\\day" & $day & ".in")
 
 
@@ -295,8 +295,29 @@ SOLUTIONS[6] = proc (input: string):(string, string) =
     p2 = counter.sum
     return ($p1, $p2)
 
+SOLUTIONS[7] = proc (input: string):(string, string) =
+    var i = 0
+    template scanNumber(skip=0):int =
+        var n = 0
+        while input[i] in Digits:
+            n = n*10 + input[i].ord - 48
+            i += 1
+        i += skip
+        n
+    var numbers:seq[int]
+    while i < input.len:
+        numbers.add scanNumber(1)
+    
+    sort numbers
+    
+    func price(x=0):int = x*(x+1) div 2
+    var mean = numbers.mean.int
+    var p1 = numbers.mapIt(abs(it-numbers[500])).sum
+    var p2 = numbers.mapIt(price(abs(it-mean))).sum
+    return ($p1, $p2)
+
 var total_time = 0.0
-for day in 1..days:
+for day in days:
     let start = getTime()
     for _ in 1..repetitions:
         OUTPUTS[day] = SOLUTIONS[day] INPUTS[day]       
