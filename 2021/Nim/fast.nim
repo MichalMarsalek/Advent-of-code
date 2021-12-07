@@ -295,6 +295,16 @@ SOLUTIONS[6] = proc (input: string):(string, string) =
     p2 = counter.sum
     return ($p1, $p2)
 
+func median(data:seq[int]):int =
+    var counting: array[2000,int]
+    for x in data:
+        inc counting[x]
+    var cumsum = 0
+    for i in 0..<2000:
+        cumsum += counting[i]
+        if cumsum >= 500:
+            return i
+
 SOLUTIONS[7] = proc (input: string):(string, string) =
     var i = 0
     template scanNumber(skip=0):int =
@@ -308,11 +318,12 @@ SOLUTIONS[7] = proc (input: string):(string, string) =
     while i < input.len:
         numbers.add scanNumber(1)
     
-    sort numbers
+    #sort numbers
     
     func price(x=0):int = x*(x+1) div 2
     var mean = numbers.mean.int
-    var p1 = numbers.mapIt(abs(it-numbers[500])).sum
+    var median = numbers.median#numbers[500]
+    var p1 = numbers.mapIt(abs(it-median)).sum
     var p2 = numbers.mapIt(price(abs(it-mean))).sum
     return ($p1, $p2)
 
