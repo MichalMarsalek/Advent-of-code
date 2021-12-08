@@ -57,7 +57,7 @@ Apart from the general solutions I try to write separate speedy solutions (fast.
 | 1              	| 0.046 ms       	|
 | 2              	| 0.001 ms       	|
 | 3              	| 0.032 ms       	|
-| 4              	| 0.210 ms       	|
+| 4              	| 0.165 ms       	|
 | 5              	| 1.615 ms       	|
 | 6              	| 0.001 ms       	|
 | 7              	| 0.028 ms       	|

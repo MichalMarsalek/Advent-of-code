@@ -1,8 +1,8 @@
 include prelude
 import times, strscans, math, intsets, algorithm, stats, sugar, bitops
 
-const days = 8..8
-const repetitions = 100000
+const days = 4..4
+const repetitions = 10000
 var SOLUTIONS: array[26,proc (input:string):(string,string)]
 var INPUTS: array[26,string]
 var OUTPUTS: array[26,(string,string)]
@@ -10,14 +10,12 @@ var OUTPUTS: array[26,(string,string)]
 for day in days:
     INPUTS[day] = readFile("inputs\\day" & $day & ".in")
 
-template solution(d:int, code:untyped) =
-    SOLUTIONS[d] = (proc (input: string):(string, string) =
-        var p1,p2 = 0
+template solution(d:int, code:untyped): untyped =
+    SOLUTIONS[d] = proc (input {.inject.}: string):(string, string) =
+        var p1 {.inject.},p2 {.inject.} = 0
         code
         return ($p1, $p2)
-    )
             
-discard """
 solution(1):
     type part = tuple[start: int, len: int]
     func mySplit2(text:string):seq[part] =
@@ -206,8 +204,69 @@ solution(4):
                 if p1 == 0:
                     p1 = p2
                 players[i] = true
+
+solution(4):
+    #parsing
+    var nums: seq[int]
+    var cards: seq[array[25, int]]
+    var checks: seq[array[25, bool]]
+    var i,n = 0
+    while input[i] != '\n':
+        n = input[i].ord - 48
+        i+=1
+        if input[i] != ',':
+            n = n*10 + (input[i].ord - 48)
+            i += 2
+        else:
+            i += 1
+        nums.add n
+    inc i
+    while i < input.len:
+        var card: array[25, int]
+        for j in 0..24:
+            if input[i] == ' ':                
+                n = input[i+1].ord - 48
+            else:
+                n = input[i+1].ord - 48 + (input[i].ord - 48)*10
+            i += 3
+            card[j] = n
+        cards.add card
+        var x:array[25, bool]
+        checks.add x
+        inc i
+    var players = newSeq[bool](cards.len)
     
-solutions(5):
+    #game
+    proc update(n, i: int):bool =
+        for j in 0..<25:
+            if cards[i][j] == n:
+                checks[i][j] = true
+                let row = j div 5 * 5
+                let col = j mod 5
+                if allIt(0..4, checks[i][row + it]): return true
+                if allIt(0..4, checks[i][col + it*5]): return true
+                break
+    
+    proc score(i:int): int =
+        for j in 0..24:
+            if not checks[i][j]: result += cards[i][j]
+    
+    var score1, score2 = 0
+    var first_i,last_i,first_n,last_n = -1
+    for n in nums:
+        for i in 0..<cards.len:
+            if players[i]: continue
+            if update(n, i):
+                last_i = i
+                last_n = n
+                if first_i == -1:
+                    first_i = i
+                    first_n = n
+                players[i] = true
+    p1 = first_i.score * first_n
+    p2 = last_i.score * last_n
+    
+solution(5):
     var i = 0
     template scanNumber(skip=0):int =
         var n = 0
@@ -344,11 +403,9 @@ solution(7):
     p1 = numbers.mapIt(abs(it-median)).sum
     p2 = numbers.mapIt(price(abs(it-mean))).sum
 
-"""
-
-#solution(8):
-SOLUTIONS[8] = proc (input: string):(string, string) =
-    var p1,p2 = 0
+solution(8):
+#SOLUTIONS[8] = proc (input: string):(string, string) =
+    #var p1,p2 = 0
     func toSet(text:string):set[char] =
         for x in text: result.incl x
     
@@ -401,11 +458,8 @@ SOLUTIONS[8] = proc (input: string):(string, string) =
         for i in 0..3:
             if decoded[i] in [1,4,7,8]: p1 += 1
             temp[i] += decoded[i]
-    
-    return ($p1, $(temp[0]*1000+temp[1]*100+temp[2]*10+temp[3]))
 
-SOLUTIONS[8] = proc (input: string):(string, string) =
-    var p1,p2 = 0
+solution(8):
     func decode(line: array[14,int8]):array[4,int] =
         var d1,d4,d8 = 0b01111111'i8
         for g in line:
