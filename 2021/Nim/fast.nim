@@ -1,7 +1,7 @@
 include prelude
-import times, strscans, math, intsets, algorithm, stats
+import times, strscans, math, intsets, algorithm, stats, sugar
 
-const days = 6..7
+const days = 8..8
 const repetitions = 1000
 var SOLUTIONS: array[26,proc (input:string):(string,string)]
 var INPUTS: array[26,string]
@@ -10,11 +10,15 @@ var OUTPUTS: array[26,(string,string)]
 for day in days:
     INPUTS[day] = readFile("inputs\\day" & $day & ".in")
 
-
-
+template solution(d:int, code:untyped) =
+    SOLUTIONS[d] = (proc (input: string):(string, string) =
+        var p1,p2 = 0
+        code
+        return ($p1, $p2)
+    )
             
-
-SOLUTIONS[1] = proc (input: string):(string, string) =
+discard """
+solution(1):
     type part = tuple[start: int, len: int]
     func mySplit2(text:string):seq[part] =
         var start = 0
@@ -29,15 +33,13 @@ SOLUTIONS[1] = proc (input: string):(string, string) =
             if input[a.start + i] < input[b.start + i]: return true
             if input[a.start + i] > input[b.start + i]: return false
     var parts = input.mySplit2 # idk why but strutils.split is just so slow
-    var p1,p2 = 0
     if parts[0] .lt2 parts[1]: inc p1
     if parts[1] .lt2 parts[2]: inc p1
     for i in 3..<parts.len:
         if parts[i-1] .lt2 parts[i]: inc p1
         if parts[i-3] .lt2 parts[i]: inc p2
-    return ($p1, $p2)
 
-SOLUTIONS[2] = proc (input: string):(string, string) =
+solution(2):
     var i = 0
     var x,y,aim = 0
     while i < input.len:
@@ -48,7 +50,7 @@ SOLUTIONS[2] = proc (input: string):(string, string) =
             let X = input[i+8].ord - 48; x += X; y += aim*X; i += 10
     return ($(x*aim), $(x*y))
 
-SOLUTIONS[3] = proc (input: string):(string, string) =
+solution(3):
     func toInt(x: array[12,int]):int =
         for i in 0..11:
             result = result * 2 + x[i]
@@ -98,7 +100,7 @@ SOLUTIONS[3] = proc (input: string):(string, string) =
         
     return ($(most.toInt*least.toInt), $(most_data[0].toInt*least_data[0].toInt))
 
-SOLUTIONS[3] = proc (input: string):(string, string) =
+solution(3):
     #parsing
     var data: seq[uint32]
     var i = 0
@@ -149,7 +151,7 @@ SOLUTIONS[3] = proc (input: string):(string, string) =
         
     return ($(most*least), $(most_data[0]*least_data[0]))
 
-SOLUTIONS[4] = proc (input: string):(string, string) =
+solution(4):
     #parsing
     var nums: seq[int]
     var cards: seq[array[25, int]]
@@ -200,13 +202,12 @@ SOLUTIONS[4] = proc (input: string):(string, string) =
         for i in 0..<cards.len:
             if players[i]: continue
             if update(n, i):
-                score2 = i.score*n
-                if score1 == 0:
-                    score1 = score2
+                p2 = i.score*n
+                if p1 == 0:
+                    p1 = p2
                 players[i] = true
-    return ($score1, $score2)
     
-SOLUTIONS[5] = proc (input: string):(string, string) =
+solutions(5):
     var i = 0
     template scanNumber(skip=0):int =
         var n = 0
@@ -215,7 +216,7 @@ SOLUTIONS[5] = proc (input: string):(string, string) =
             i += 1
         i += skip
         n
-    var p1, p2, c1, c2: IntSet
+    var pa1, pa2, c1, c2: IntSet
     var total = 0
     while i < input.len:
         var x1 = scanNumber(1)
@@ -229,15 +230,15 @@ SOLUTIONS[5] = proc (input: string):(string, string) =
             let Y = y1 + i * sgn(y2-y1)
             let Z = (X shl 12) xor Y
             if x1 == x2 or y1 == y2:
-                if Z in p1:
+                if Z in pa1:
                     c1.incl Z
-                p1.incl Z
-            if Z in p2:
+                pa1.incl Z
+            if Z in pa2:
                 c2.incl Z
-            p2.incl Z
+            pa2.incl Z
     return ($c1.len, $c2.len)
     
-SOLUTIONS[5] = proc (input: string):(string, string) =
+solution(5):
     var i = 0
     template scanNumber(skip=0):int =
         var n = 0
@@ -246,7 +247,7 @@ SOLUTIONS[5] = proc (input: string):(string, string) =
             i += 1
         i += skip
         n
-    var p1, p2: array[1024000, int8]
+    var pa1, pa2: array[1024000, int8]
     var total = 0
     while i < input.len:
         var x1 = scanNumber(1)
@@ -260,17 +261,17 @@ SOLUTIONS[5] = proc (input: string):(string, string) =
             let Y = y1 + i * sgn(y2-y1)
             let Z = (X shl 10) xor Y
             if x1 == x2 or y1 == y2:
-                p1[Z] += 1
+                pa1[Z] += 1
             else:
-                p2[Z] += 1
+                pa2[Z] += 1
     var c1,c2 = 0
-    for x in p1:
+    for x in pa1:
         if x>1: c1 += 1
     for i in 0..<1024000:
-        if p1[i]+p2[i]>1: c2 += 1
+        if pa1[i]+pa2[i]>1: c2 += 1
     return ($c1, $c2)
 
-SOLUTIONS[6] = proc (input: string):(string, string) =
+solution(6):
     var i = 0
     template scanNumber(skip=0):int =
         var n = 0
@@ -279,7 +280,6 @@ SOLUTIONS[6] = proc (input: string):(string, string) =
             i += 1
         i += skip
         n
-    var p1, p2 = 0
     var counter: array[9, int]
     while i < input.len:
         counter[scanNumber(1)] += 1
@@ -293,9 +293,8 @@ SOLUTIONS[6] = proc (input: string):(string, string) =
         if i == 80:
             p1 = counter.sum
     p2 = counter.sum
-    return ($p1, $p2)
     
-SOLUTIONS[6] = proc (input: string):(string, string) =
+solution(6):
     var i = 0
     template scanNumber(skip=0):int =
         var n = 0
@@ -304,7 +303,6 @@ SOLUTIONS[6] = proc (input: string):(string, string) =
             i += 1
         i += skip
         n
-    var p1, p2 = 0
     var counter: array[9, int]
     while i < input.len:
         counter[scanNumber(1)] += 1
@@ -325,7 +323,7 @@ func median(data:seq[int]):int =
         if cumsum >= 500:
             return i
 
-SOLUTIONS[7] = proc (input: string):(string, string) =
+solution(7):
     var i = 0
     template scanNumber(skip=0):int =
         var n = 0
@@ -343,9 +341,68 @@ SOLUTIONS[7] = proc (input: string):(string, string) =
     func price(x=0):int = x*(x+1) div 2
     var mean = numbers.mean.int
     var median = numbers.median#numbers[500]
-    var p1 = numbers.mapIt(abs(it-median)).sum
-    var p2 = numbers.mapIt(price(abs(it-mean))).sum
-    return ($p1, $p2)
+    p1 = numbers.mapIt(abs(it-median)).sum
+    p2 = numbers.mapIt(price(abs(it-mean))).sum
+
+"""
+
+#solution(8):
+SOLUTIONS[8] = proc (input: string):(string, string) =
+    var p1,p2 = 0
+    func toSet(text:string):set[char] =
+        for x in text: result.incl x
+    
+    func decode(line: seq[set[char]]):array[4,int] =
+        var d1,d4,d8 = {'a'..'g'}
+        for g in line:
+            if g.card == 2:
+                d1 = g; break
+        for g in line:
+            if g.card == 4:
+                d4 = g; break
+        for i in 0..3:
+            let number = line[10+i]
+            let c8 = card number
+            if c8 == 7: result[i] = 8; continue
+            if c8 == 2: result[i] = 1; continue
+            if c8 == 3: result[i] = 7; continue
+            if c8 == 4: result[i] = 4; continue
+            let c1 = card(d1 * number)
+            let c4 = card(d4 * number)
+            if c8 == 5:
+                if c4 == 2: result[i] = 2; continue
+                if c1 == 1: result[i] = 5; continue
+                result[i] = 3; continue
+            if c4 == 4: result[i] = 9; continue
+            if c1 == 1: result[i] = 6; continue
+            result[i] = 0            
+    
+    var lines:seq[seq[set[char]]]
+    var i = 0
+    var line:seq[set[char]]
+    var number:set[char]
+    while i < input.len:
+        if input[i] == '\n':
+            line.add number
+            reset number
+            lines.add line
+            reset line
+        elif input[i] == ' ':
+            line.add number
+            reset number
+        elif input[i] == '|':
+            i += 1
+        else:
+            number.incl input[i]
+        i += 1
+    var temp: array[4, int]
+    for line in lines:
+        var decoded = decode line
+        for i in 0..4:
+            if decoded[i] in [1,4,7,8]: p1 += 1
+            temp[i] += decoded[i]
+    
+    return ($p1, $(temp[0]*1000+temp[1]*100+temp[2]*10+temp[3]))
 
 var total_time = 0.0
 for day in days:
