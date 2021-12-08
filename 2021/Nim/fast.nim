@@ -1,7 +1,7 @@
 include prelude
 import times, strscans, math, intsets, algorithm, stats
 
-const days = 1..7
+const days = 6..7
 const repetitions = 1000
 var SOLUTIONS: array[26,proc (input:string):(string,string)]
 var INPUTS: array[26,string]
@@ -294,6 +294,26 @@ SOLUTIONS[6] = proc (input: string):(string, string) =
             p1 = counter.sum
     p2 = counter.sum
     return ($p1, $p2)
+    
+SOLUTIONS[6] = proc (input: string):(string, string) =
+    var i = 0
+    template scanNumber(skip=0):int =
+        var n = 0
+        while input[i] in Digits:
+            n = n*10 + input[i].ord - 48
+            i += 1
+        i += skip
+        n
+    var p1, p2 = 0
+    var counter: array[9, int]
+    while i < input.len:
+        counter[scanNumber(1)] += 1
+    
+    for i in 0..255:
+        counter[(i+7) mod 9] += counter[i mod 9]        
+        if i == 79:
+            p1 = counter.sum
+    return ($p1, $counter.sum)
 
 func median(data:seq[int]):int =
     var counting: array[2000,int]
