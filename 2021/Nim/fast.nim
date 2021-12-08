@@ -1,5 +1,5 @@
 include prelude
-import times, strscans, math, intsets, algorithm, stats, sugar
+import times, strscans, math, intsets, algorithm, stats, sugar, bitops
 
 const days = 8..8
 const repetitions = 1000
@@ -398,7 +398,61 @@ SOLUTIONS[8] = proc (input: string):(string, string) =
     var temp: array[4, int]
     for line in lines:
         var decoded = decode line
-        for i in 0..4:
+        for i in 0..3:
+            if decoded[i] in [1,4,7,8]: p1 += 1
+            temp[i] += decoded[i]
+    
+    return ($p1, $(temp[0]*1000+temp[1]*100+temp[2]*10+temp[3]))
+
+SOLUTIONS[8] = proc (input: string):(string, string) =
+    var p1,p2 = 0
+    func decode(line: seq[int8]):array[4,int] =
+        var d1,d4,d8 = 0b01111111'i8
+        for g in line:
+            if g.countSetBits == 2:
+                d1 = g; break
+        for g in line:
+            if g.countSetBits == 4:
+                d4 = g; break
+        for i in 0..3:
+            let number = line[10+i]
+            let c8 = countSetBits number
+            if c8 == 7: result[i] = 8; continue
+            if c8 == 2: result[i] = 1; continue
+            if c8 == 3: result[i] = 7; continue
+            if c8 == 4: result[i] = 4; continue
+            let c1 = countSetBits(d1 and number)
+            let c4 = countSetBits(d4 and number)
+            if c8 == 5:
+                if c4 == 2: result[i] = 2; continue
+                if c1 == 1: result[i] = 5; continue
+                result[i] = 3; continue
+            if c4 == 4: result[i] = 9; continue
+            if c1 == 1: result[i] = 6; continue
+            result[i] = 0            
+    
+    var lines:seq[seq[int8]]
+    var i = 0
+    var line:seq[int8]
+    var number:int8
+    while i < input.len:
+        if input[i] == '\n':
+            line.add number
+            number = 0
+            lines.add line
+            reset line
+        elif input[i] == ' ':
+            line.add number
+            reset number
+        elif input[i] == '|':
+            i += 1
+        else:
+            number = number xor (1'i8 shl (input[i].ord - 97))
+        i += 1
+    var temp: array[4, int]
+    for line in lines:
+        var decoded = decode line
+        for i in 0..3:
             if decoded[i] in [1,4,7,8]: p1 += 1
             temp[i] += decoded[i]
     
