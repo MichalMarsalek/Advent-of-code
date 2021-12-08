@@ -2,7 +2,7 @@ include prelude
 import times, strscans, math, intsets, algorithm, stats, sugar, bitops
 
 const days = 8..8
-const repetitions = 1000
+const repetitions = 100000
 var SOLUTIONS: array[26,proc (input:string):(string,string)]
 var INPUTS: array[26,string]
 var OUTPUTS: array[26,(string,string)]
@@ -406,7 +406,7 @@ SOLUTIONS[8] = proc (input: string):(string, string) =
 
 SOLUTIONS[8] = proc (input: string):(string, string) =
     var p1,p2 = 0
-    func decode(line: seq[int8]):array[4,int] =
+    func decode(line: array[14,int8]):array[4,int] =
         var d1,d4,d8 = 0b01111111'i8
         for g in line:
             if g.countSetBits == 2:
@@ -431,18 +431,21 @@ SOLUTIONS[8] = proc (input: string):(string, string) =
             if c1 == 1: result[i] = 6; continue
             result[i] = 0            
     
-    var lines:seq[seq[int8]]
-    var i = 0
-    var line:seq[int8]
+    var lines:array[200,array[14,int8]]
+    var i,j,k = 0
+    var line:array[14,int8]
     var number:int8
     while i < input.len:
         if input[i] == '\n':
-            line.add number
+            line[j] = number
+            j = 0
             number = 0
-            lines.add line
+            lines[k] = line
+            k += 1
             reset line
         elif input[i] == ' ':
-            line.add number
+            line[j] = number
+            j += 1
             reset number
         elif input[i] == '|':
             i += 1
