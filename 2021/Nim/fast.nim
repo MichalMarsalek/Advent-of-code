@@ -1,8 +1,8 @@
 include prelude
 import times, strscans, math, intsets, algorithm, stats, sugar, bitops
 
-const days = 1..8
-const repetitions = 10000
+const days = 9..9
+const repetitions = 100000
 var SOLUTIONS: array[26,proc (input:string):(string,string)]
 var INPUTS: array[26,string]
 var OUTPUTS: array[26,(string,string)]
@@ -512,6 +512,60 @@ solution(8):
             temp[i] += decoded[i]
     
     return ($p1, $(temp[0]*1000+temp[1]*100+temp[2]*10+temp[3]))
+
+solution(9):
+    var data:array[101*102,int8]
+    #parsing
+    for i in 0..100: data[i] = 57
+    for i in (101*101)..<(101*102): data[i] = 57
+    var i = 101
+    for y in 0..99:
+        for x in 0..99:
+            data[i] = input[i-101].ord.int8
+            inc i
+        data[i] = 57
+        inc i
+    i = 0
+    
+    #part1
+    var minimums:array[1000,int]
+    for p in 101..<(101*102):
+        if( data[p]<data[p-1] and
+         data[p]<data[p+1] and
+         data[p]<data[p-101] and
+         data[p]<data[p+101]):
+            minimums[i] = p
+            p1 += data[p].ord
+            inc i
+    p1 -= i*47
+    
+    #part2
+    var stack: array[101*102,int]
+    var stack_i:int 
+    var sizes:array[1000,int]
+    for j in 0..<i:
+        stack_i = 0
+        stack[0] = minimums[j]
+        while stack_i >= 0:
+            var p = stack[stack_i]
+            dec stack_i
+            if data[p] < 57:
+                inc sizes[i]
+                data[p] = 57
+                inc stack_i; stack[stack_i] = p-1
+                inc stack_i; stack[stack_i] = p+1
+                inc stack_i; stack[stack_i] = p-101
+                inc stack_i; stack[stack_i] = p+101
+    p2 = 1
+    for k in 0..2:
+        var curmax = k
+        for j in k..<i:
+            if sizes[j] > sizes[curmax]:
+                curmax = j
+        p2 *= sizes[curmax]
+        sizes[curmax] = sizes[k]
+    
+    
 
 var total_time = 0.0
 for day in days:
