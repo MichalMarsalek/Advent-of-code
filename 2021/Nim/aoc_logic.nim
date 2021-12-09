@@ -4,8 +4,8 @@ import re, macros, httpclient, net, algorithm, times, math, strscans
 var SOLUTIONS*: Table[int, proc (x:string):Table[int,string]]
 
 const
- directions8 = [(-1, -1), (0, -1), (1, -1), (1, 0), (1, 1), (0, 1), (-1, 1), (-1, 0)]
- directions4 = [(0, -1), (1, 0), (0, 1), (-1, 0)]
+ directions8* = [(-1, -1), (0, -1), (1, -1), (1, 0), (1, 1), (0, 1), (-1, 1), (-1, 0)]
+ directions4* = [(0, -1), (1, 0), (0, 1), (-1, 0)]
 
 
 func drop[T](s: seq[T], d: int):seq[T] = s[d..^1]
@@ -26,7 +26,11 @@ template day*(day:int, solution:untyped):untyped =
         SOLUTIONS[day] = proc (input: string):Table[int,string] =
             var inputRaw{.inject.} = input
             var input   {.inject.} = input.strip
-            var ints    {.inject.} = input.ints
+            var ints {.inject.} :seq[int]
+            try:
+                ints     = input.ints
+            except: discard
+            
             var lines   {.inject.} = input.splitLines
             var parts   {.inject.}: Table[int, proc ():string]
             solution

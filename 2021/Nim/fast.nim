@@ -1,7 +1,7 @@
 include prelude
 import times, strscans, math, intsets, algorithm, stats, sugar, bitops
 
-const days = 4..4
+const days = 1..8
 const repetitions = 10000
 var SOLUTIONS: array[26,proc (input:string):(string,string)]
 var INPUTS: array[26,string]
@@ -404,8 +404,6 @@ solution(7):
     p2 = numbers.mapIt(price(abs(it-mean))).sum
 
 solution(8):
-#SOLUTIONS[8] = proc (input: string):(string, string) =
-    #var p1,p2 = 0
     func toSet(text:string):set[char] =
         for x in text: result.incl x
     

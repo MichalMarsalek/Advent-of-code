@@ -28,7 +28,7 @@ Each `day` block defines a function `string --> Table[int, string]` that on give
 The input is implicit in an injected `input` variable as well as in `ints` variable (which comprises of parsed integers present anywhere in the input).  
 The solution function is also stored in `SOLUTIONS[day]`.  
 Instead of `part 1:` you can do `part 1,int` and specify the output type of the part. This is useful because it gives you an autoinitialized `result`. Parts other than 1 and 2 are supported.
-The `aoc` module apart from implementing these templates, includes `prelude`, `algorithm` and `math`.
+The `aoc` module apart from implementing these templates, includes `prelude`, `algorithm, sugar, strscans` and `math`.
 On a high level, the substitution goes something like this:
 
 ```nim
