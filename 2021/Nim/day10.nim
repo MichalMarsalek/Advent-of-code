@@ -10,11 +10,10 @@ day 10:
         for e in text:
             if brackets.hasKey e:
                 stack = brackets[e] & stack
+            elif stack[0] == e:
+                stack = stack[1..^1]
             else:
-                if stack[0] == e:
-                    stack = stack[1..^1]
-                else:
-                    if part == 1: return scores1[e]
+                if part == 1: return scores1[e]
         if part == 1: return 0
         for b in stack:
             result = result*5 + scores2[b]
