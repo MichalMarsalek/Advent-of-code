@@ -1,9 +1,9 @@
 include aoc
 
 day 10:
-    let brackets = {'(':')','[':']','{':'}','<':'>'}.toTable
-    let scores1 = {')':3,']':57,'}':1197,'>':25137}.toTable
-    let scores2 = {')':1,']':2,'}':3,'>':4}.toTable
+    const brackets = {'(':')','[':']','{':'}','<':'>'}.toTable
+    const scores1 = {')':3,']':57,'}':1197,'>':25137}.toTable
+    const scores2 = {')':1,']':2,'}':3,'>':4}.toTable
     
     func score(text:string, part:range[1..2]):int =
         var stack = ""
