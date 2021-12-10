@@ -111,6 +111,11 @@ func crt*(data: seq[(int, int)]): int =
         let p = big_mod div m
         result = (result + v * modInv(p, m) * p) mod big_mod
 
+func median*[T](data: seq[T]):T =
+    data.sorted[data.len div 2]
+func medianHigh*[T](data: seq[T]):T =
+    data.sorted[data.len div 2 + 1]
+
 
 func `[]`*[T](data:seq[seq[T]], index:(int,int)):T =
     data[index[1]][index[0]]
