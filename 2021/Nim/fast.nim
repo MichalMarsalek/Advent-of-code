@@ -1,7 +1,7 @@
 include prelude
 import times, strscans, math, intsets, algorithm, stats, sugar, bitops
 
-const days = 9..9
+const days = 10..10
 const repetitions = 100000
 var SOLUTIONS: array[26,proc (input:string):(string,string)]
 var INPUTS: array[26,string]
@@ -14,7 +14,7 @@ template solution(d:int, code:untyped): untyped =
     SOLUTIONS[d] = proc (input {.inject.}: string):(string, string) =
         var p1 {.inject.},p2 {.inject.} = 0
         code
-        return ($p1, $p2)
+        return ($p1, $p2)    
             
 solution(1):
     type part = tuple[start: int, len: int]
@@ -564,6 +564,52 @@ solution(9):
                 curmax = j
         p2 *= sizes[curmax]
         sizes[curmax] = sizes[k]
+
+solution(10):
+    func fast_split(text:string, sep:char):array[102,string] =
+        var i,k = 0
+        for j in 0..<text.len:
+            if text[j] == sep:
+                result[k] = text[i..<j]
+                inc k
+                i = j + 1
+    
+    func toArrayTable[T](data:openarray[(char,T)]):array[128,int] =
+        for (k,v) in data:
+            result[k.ord] = v.ord
+       
+    const brackets = {'(':')','[':']','{':'}','<':'>'}.toArrayTable
+    const scores1 = {')':3,']':57,'}':1197,'>':25137}.toArrayTable
+    const scores2 = {')':1,']':2,'}':3,'>':4}.toArrayTable
+    
+    var lines = input.fastsplit '\n'
+    var score2s: seq[int]
+    
+    proc score(line:int) =
+        var stack: array[200,int]
+        var stack_i = -1
+        var unexpected = false
+        for e in lines[line]:
+            let eord = e.ord
+            if brackets[eord] > 0:
+                inc stack_i
+                stack[stack_i] = brackets[eord]
+            else:
+                if stack[stack_i] == eord:
+                    dec stack_i
+                else:
+                    p1 += scores1[eord]
+                    unexpected = true
+                    break
+        if not unexpected:
+            var part2 = 0
+            for bi in countdown(stack_i,0):
+                part2 = part2*5 + scores2[stack[bi]]
+            score2s.add part2
+            
+    for i in 0..<lines.len:
+        score i
+    p2 = score2s.sorted[score2s.len div 2]
     
     
 
