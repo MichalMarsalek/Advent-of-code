@@ -5,7 +5,7 @@ day 10:
     let scores1 = {')':3,']':57,'}':1197,'>':25137}.toTable
     let scores2 = {')':1,']':2,'}':3,'>':4}.toTable
     
-    proc score(text:string, part:range[1..2]):int =
+    func score(text:string, part:range[1..2]):int =
         var stack = ""
         for e in text:
             if brackets.hasKey e:
