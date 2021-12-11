@@ -51,6 +51,7 @@ echo SOLUTIONS[k](getInputForDay(k))
 
 ## Fast solutions
 Apart from the general solutions I try to write separate speedy solutions (fast.nim).
+As is usual, I measure the time time it takes for a function which takes the input as a string a returns two strings representing the answer to return. Measuring how long it takes the OS to start the program or how long it takes the harddisk to read the input is kind of random and totally uninteresting to me. Each day is evaluated 10000 times.
 
 | Day             	| Mean time        	|
 |-----------------	|---------------	|
