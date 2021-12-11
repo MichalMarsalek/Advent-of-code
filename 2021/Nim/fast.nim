@@ -1,8 +1,8 @@
 include prelude
 import times, strscans, math, intsets, algorithm, stats, sugar, bitops
 
-const days = 10..10
-const repetitions = 100000
+const days = 11..11
+const repetitions = 10000
 var SOLUTIONS: array[26,proc (input:string):(string,string)]
 var INPUTS: array[26,string]
 var OUTPUTS: array[26,(string,string)]
@@ -609,7 +609,43 @@ solution(10):
             
     for i in 0..<lines.len:
         score i
-    p2 = score2s.sorted[score2s.len div 2]    
+    p2 = score2s.sorted[score2s.len div 2]
+
+solution(11):
+    var grid:array[11*12+1,int8]
+    #parsing
+    var i = 0
+    for y in 0..9:
+        for x in 0..9:
+            grid[i+12] = int8(input[i].ord-48)
+            inc i
+        inc i
+    
+    proc update():int =
+        var stack: array[1000,int]
+        var stack_i = -1
+        for x in 0..9:
+            for y in 1..10:
+                let p = y*11+x+1
+                grid[p] += 1
+                inc stack_i
+                stack[stack_i] = p
+        while stack_i >= 0:
+            let p = stack[stack_i]
+            dec stack_i
+            if grid[p] >= 10:
+                grid[p] = 0
+                inc result
+                for P in [p-12,p-11,p-10,p-1,p+1,p+10,p+11,p+12]:
+                    if grid[P] > 0:
+                        grid[P] += 1
+                        inc stack_i
+                        stack[stack_i] = P
+    for i in 1..69_420:
+        let f = update()
+        if i <= 100: p1 += f
+        if f == 100:
+            return ($p1, $i)
     
 
 var total_time = 0.0
