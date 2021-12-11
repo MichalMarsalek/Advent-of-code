@@ -11,7 +11,7 @@ template day*(day:int, solution:untyped):untyped =
             var input   {.inject.} = input.strip
             var ints    {.inject.} = input.ints
             var lines   {.inject.} = input.splitLines
-            var parts   {.inject.}: Table[int, proc ():string]
+            var parts   {.inject.}: OrderedTable[int, proc ():string]
             solution
             for k,v in parts:
                 result[k] = $v()
@@ -26,19 +26,43 @@ template part*(p:int, t=auto, solution:untyped):untyped =
             solution
         return $inner()
 
+## GRID and POINTS
 
 ## Common direction vectors
 const
  directions8* = [(-1, -1), (0, -1), (1, -1), (1, 0), (1, 1), (0, 1), (-1, 1), (-1, 0)]
  directions4* = [(0, -1), (1, 0), (0, 1), (-1, 0)]
 
+type Grid*[T] = seq[seq[T]]
+type Point* = (int, int)
+template x*(p:Point):int = p[0]
+template y*(p:Point):int = p[1]
+
+template `[]`*[T](data:Grid[T], index:Point):T =
+    data[index.y][index.x]
+template `[]`*[T](data:Grid[T], x,y:int):T =
+    data[y][x]
+proc `[]=`*[T](data: var Grid[T], index: Point, val: int) =
+    data[index.y][index.x] = val
+proc `[]=`*[T](data: var Grid[T], x,y:int, val: int) =
+    data[y][x] = val
+
+func size*[T](data:Grid[T]):int =
+    data.len * data[0].len
+
+template `+`*(a,b:Point):Point = (a.x+b.x, a.y+b.y)
+template `-`*(a:Point):Point = (-a.x, -b.x)
+template `-`*(a,b:Point):Point = a + (-b)
+template `*`*(a:int,b:Point):Point = (a*b.x, a*b.y)
+
+
 
 func drop*[T](s: seq[T], d: int):seq[T] =
     ## Returns s with d initial elements dropped
     s[d..^1]
 
-func grid*(data:string, sep:string = ""): seq[seq[string]] =
-    ## Splits input into 2D grid, rows separated by NL,
+func grid*(data:string, sep:string = ""): Grid[string] =
+    ## Splits input into 2D Grid, rows separated by NL,
     ## columns separated by sep - whitespace by default.
     if sep == "":
         return data.splitLines.mapIt(it.splitWhitespace)
@@ -48,7 +72,7 @@ func ints*(data:string): seq[int] =
     ## Returns all ints < 10^9 present in the input text.
     data.findAll(re"-?\d+").filterIt(it.len <= 18).map(parseInt)
 
-func intgrid*(data:string): seq[seq[int]] =
+func intGrid*(data:string): Grid[int] =
     ## Returns a matrix of ints present in the input text
     data.splitLines.map(ints)
 
@@ -117,53 +141,51 @@ func medianHigh*[T](data: seq[T]):T =
     data.sorted[data.len div 2 + 1]
 
 
-func `[]`*[T](data:seq[seq[T]], index:(int,int)):T =
-    data[index[1]][index[0]]
-func `[]`*[T](data:seq[seq[T]], x,y:int):T =
-    data[y][x]
-
-
-iterator neighbours*(x,y:int,directions=directions4):(int,int) =
+iterator neighbours*(p:Point,directions:openarray[Point]=directions4):Point =
     ## Returns all neighbours of a lattice point.
-    for (dx,dy) in directions4:
-        yield (x+dx, y+dy)
+    for d in directions:
+        yield p+d
 
-iterator neighbours*[T](x,y:int, directions=directions4,
-                    data:seq[seq[T]]):(int,int) =
+iterator neighbours*[T](data:Grid[T], p:Point,
+                        directions:openarray[Point]=directions4):Point =
     ## Returns all neighbours of a lattice that
     ## are a valid indeces to the given data.
     let height = len data
     let width = len data[0]
-    for (X,Y) in neighbours(x,y,directions):
+    for (X,Y) in neighbours(p,directions):
         if 0 <= X and X < width and 0 <= Y and Y < height:
             yield (X,Y)
 
-func neighboursRec*[T](x,y:int, data:seq[seq[T]], pred: proc (a,b:T):bool,
-                      directions=directions4): Table[(int,int),int] =
+func neighboursRec*[T](data:Grid[T], p:Point, pred: proc (a,b:T):bool,
+                      directions:openarray[Point]=directions4): Table[Point,int] =
     ## Returns a table, in which each recursive neigbour of the
     ## given point is mapped to the least number of steps it takes.
     ## The predicate pred restricts the neighbourness condition.
-    var q = [(x,y,0)].toDeque
+    var q = [(p,0)].toDeque
     while q.len > 0:
-        var (x,y,d) = q.popFirst
-        result[(x,y)] = d
-        for (X,Y) in neighbours(x,y, directions, data):
-            if pred(data[x,y], data[X,Y]):
-                if not result.hasKey((X,Y)):
-                    q.addLast((X,Y,d+1))
+        var (p,d) = q.popFirst
+        result[p] = d
+        for P in data.neighbours(p, directions):
+            if pred(data[p], data[P]):
+                if P notin result:
+                    q.addLast (P,d+1)
 
-func continuousAreas*[T](data:seq[seq[T]], pred: proc (a,b:T):bool,
-                         directions=directions4): seq[HashSet[(int,int)]] =
-    ## Returns a seq that forms a disjoint union of the grid data,
-    ## based on the pre predicate -  see neighboursRec.
-    var visited: HashSet[(int,int)]
+iterator coordinates*[T](data:Grid[T]):Point =
     let height = len data
     let width = len data[0]
     for y in 0..<height:
         for x in 0..<width:
-            if (x,y) in visited:
-                continue
-            let area = neighboursRec(x,y, data, pred, directions).keys.toSeq.toHashSet
-            visited = visited + area
-            result.add area
+            yield (x,y)
+
+func continuousAreas*[T](data:Grid[T], pred: proc (a,b:T):bool,
+                         directions:openarray[Point]=directions4): seq[HashSet[Point]] =
+    ## Returns a seq that forms a disjoint union of the Grid data,
+    ## based on the pre predicate -  see neighboursRec.
+    var visited: HashSet[Point]
+    for p in data.coordinates:
+        if p in visited:
+            continue
+        let area = data.neighboursRec(p, pred, directions).keys.toSeq.toHashSet
+        visited = visited + area
+        result.add area
 

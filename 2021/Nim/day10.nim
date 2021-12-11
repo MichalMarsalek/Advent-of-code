@@ -20,3 +20,4 @@ day 10:
     
     part 1: lines.mapIt(it.score 1).sum
     part 2: lines.filterIt(0 == it.score 1).mapIt(it.score 2).median
+    part 3: echo 'f'.ord.type; return 0

@@ -609,8 +609,7 @@ solution(10):
             
     for i in 0..<lines.len:
         score i
-    p2 = score2s.sorted[score2s.len div 2]
-    
+    p2 = score2s.sorted[score2s.len div 2]    
     
 
 var total_time = 0.0
