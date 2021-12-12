@@ -1,7 +1,7 @@
 include prelude
-import times, strscans, math, intsets, algorithm, stats, sugar, bitops
+import times, strscans, math, intsets, algorithm, stats, sugar, bitops, memo
 
-const days = 11..11
+const days = 1..12
 const repetitions = 10000
 var SOLUTIONS: array[26,proc (input:string):(string,string)]
 var INPUTS: array[26,string]
@@ -297,6 +297,43 @@ solution(5):
             pa2.incl Z
     return ($c1.len, $c2.len)
     
+solution(5): #doesn't work yet
+    var i = 0
+    template scanNumber(skip=0):int =
+        var n = 0
+        while input[i] in Digits:
+            n = n*10 + input[i].ord - 48
+            i += 1
+        i += skip
+        n
+    var pa1, pa2: array[1024000, int8]
+    var total = 0
+    while i < input.len:
+        var x1 = scanNumber(1)
+        var y1 = scanNumber(4)
+        var x2 = scanNumber(1)
+        var y2 = scanNumber(1)
+        var sx = sgn(x2-x1)
+        var sy = sgn(y2-y1)
+        var orto = x1 == x2 or y1 == y2
+        
+        var Z = (x1 shl 10) xor y1
+        var DZ = ((sx) shl 10) xor (sy)
+        
+        for i in 0..max(abs(x1-x2),abs(y1-y2)):
+            total += 1
+            if orto:
+                pa1[Z] += 1
+            else:
+                pa2[Z] += 1
+            Z += DZ
+    var c1,c2 = 0
+    for x in pa1:
+        if x>1: c1 += 1
+    for i in 0..<1024000:
+        if pa1[i]+pa2[i]>1: c2 += 1
+    return ($c1, $c2)
+
 solution(5):
     var i = 0
     template scanNumber(skip=0):int =
@@ -646,6 +683,119 @@ solution(11):
         if i <= 100: p1 += f
         if f == 100:
             return ($p1, $i)
+
+solution(12):
+    #parsing
+    var ids: Table[string,int]
+    var neighbours: array[20, array[20, int]]
+    var isLarge: array[20, bool]
+    var curr_id = 0
+    var start,goal = 0
+    for line in input.strip.splitLines:
+        let parts = line.split('-')
+        let (a,b) = (parts[0], parts[1])
+        if a notin ids:
+            ids[a] = curr_id
+            inc curr_id
+        if b notin ids:
+            ids[b] = curr_id
+            inc curr_id
+        let ida = ids[a]
+        let idb = ids[b]
+        if a[0].isUpperAscii: isLarge[ida] = true
+        if b[0].isUpperAscii: isLarge[idb] = true
+        if a == "start": start = ida
+        if a == "end":   goal  = ida
+        if b == "start": start = idb
+        if b == "end":   goal  = idb
+        neighbours[ida][0] += 1
+        neighbours[ida][neighbours[ida][0]] = idb
+        neighbours[idb][0] += 1
+        neighbours[idb][neighbours[idb][0]] = ida
+    var visited: array[20, bool]
+    
+    func inv(x:int):string =
+        for k,v in ids:
+            if v == x:
+                return k
+    proc traverse(last:int, res: var int, comeback=false) =
+        if last == goal:
+            inc res
+        else:
+            for cave_i in 1..neighbours[last][0]:
+                let cave = neighbours[last][cave_i]
+                if isLarge[cave]:
+                    traverse(cave, res, comeback)
+                elif not visited[cave]:
+                    visited[cave] = true
+                    traverse(cave, res, comeback)
+                    visited[cave] = false
+                elif comeback and cave != start:
+                    traverse(cave, res, false)
+    visited[start] = true
+    traverse(start, p1)
+    traverse(start, p2, true)
+
+solution(12):
+    #parsing
+    var ids: Table[string,int]
+    var neighbours: array[20, array[20, int]]
+    var isLarge: array[20, bool]
+    var curr_id = 0
+    var start,goal = 0
+    for line in input.strip.splitLines:
+        let parts = line.split('-')
+        let (a,b) = (parts[0], parts[1])
+        if a notin ids:
+            ids[a] = curr_id
+            inc curr_id
+        if b notin ids:
+            ids[b] = curr_id
+            inc curr_id
+        let ida = ids[a]
+        let idb = ids[b]
+        if a[0].isUpperAscii: isLarge[ida] = true
+        if b[0].isUpperAscii: isLarge[idb] = true
+        if a == "start": start = ida
+        if a == "end":   goal  = ida
+        if b == "start": start = idb
+        if b == "end":   goal  = idb
+        neighbours[ida][0] += 1
+        neighbours[ida][neighbours[ida][0]] = idb
+        neighbours[idb][0] += 1
+        neighbours[idb][neighbours[idb][0]] = ida
+    
+    func inv(x:int):string =
+        for k,v in ids:
+            if v == x:
+                return k
+    
+    var memo: Table[int,int]
+    proc count_paths(state: int): int =
+        if state in memo:
+            return memo[state]
+        #state = start or (comeback shl 5) or (visited shl 6)
+        let start = state and 0b11111
+        let comeback = state and 0b100000
+        let visited = state shr 6
+        if start == goal:
+            memo[state] = 1
+            return 1
+        else:
+            for cave_i in 1..neighbours[start][0]:
+                let cave = neighbours[start][cave_i]
+                if isLarge[cave]:
+                    result += count_paths(state xor start xor cave)
+                elif ((visited shr cave) and 1) == 0:
+                    result += count_paths(state xor start xor cave xor (1 shl (cave+6)))
+                elif comeback == 0b100000 and cave != start:
+                    result += count_paths(state xor start xor cave xor 0b100000)
+        memo[state] = result
+    p1 = count_paths(start or (1 shl (start+6)))
+    p2 = count_paths(start or (1 shl (start+6)) or 0b100000)
+    
+        
+            
     
 
 var total_time = 0.0

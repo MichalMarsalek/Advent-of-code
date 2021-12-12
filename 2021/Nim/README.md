@@ -66,5 +66,6 @@ As is usual, I measure the time time it takes for a function which takes the inp
 | 9              	| 0.162 ms       	|
 | 10              	| 0.026 ms       	|
 | 11              	| 0.113 ms       	|
+| 12              	| 0.174 ms       	|
 
 Intel(R) Core(TM) i5-7200U CPU @ 2.50GHz   2.70 GHz

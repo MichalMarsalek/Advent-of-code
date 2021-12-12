@@ -7,10 +7,10 @@ day 12:
         neighbours.mgetOrPut(x, @[]).add y
         neighbours.mgetOrPut(y, @[]).add x
     
-    proc getPaths(start: string, goal: string, freedom=0): seq[seq[string]] =
-        proc genPaths(paths: var seq[seq[string]], prefix: seq[string], freedom:int) =
+    proc getPaths(start: string, goal: string, freedom=0): int =
+        proc genPaths(paths: var int, prefix: seq[string], freedom:int) =
             if prefix[^1] == goal:
-                paths.add prefix
+                inc paths
             else:
                 for cave in neighbours[prefix[^1]]:
                     if cave[0].isUpperAscii or cave notin prefix:
@@ -18,5 +18,5 @@ day 12:
                     elif freedom > 0 and cave != start:
                         genPaths(paths, prefix & cave, freedom - 1)
         genPaths(result, @[start], freedom)
-    part 1: getPaths("start", "end").len
-    part 2: getPaths("start", "end", 1).len
+    part 1: getPaths("start", "end")
+    part 2: getPaths("start", "end", 1)
