@@ -4,10 +4,8 @@ day 12:
     var neighbours: Table[string,seq[string]]
     for line in lines:
         let (_,x,y) = line.scanTuple("$w-$w")
-        if x notin neighbours: neighbours[x] = newSeq[string]()
-        if y notin neighbours: neighbours[y] = newSeq[string]()
-        neighbours[x].add y
-        neighbours[y].add x
+        neighbours.mgetOrPut(x, @[]).add y
+        neighbours.mgetOrPut(y, @[]).add x
     
     proc getPaths(start: string, goal: string, freedom=0): seq[seq[string]] =
         proc genPaths(paths: var seq[seq[string]], prefix: seq[string], freedom:int) =
