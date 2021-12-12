@@ -1,8 +1,8 @@
 include prelude
 import times, strscans, math, intsets, algorithm, stats, sugar, bitops, memo
 
-const days = 1..12
-const repetitions = 10000
+const days = 5..5
+const repetitions = 1000
 var SOLUTIONS: array[26,proc (input:string):(string,string)]
 var INPUTS: array[26,string]
 var OUTPUTS: array[26,(string,string)]
@@ -297,7 +297,7 @@ solution(5):
             pa2.incl Z
     return ($c1.len, $c2.len)
     
-solution(5): #doesn't work yet
+solution(5):
     var i = 0
     template scanNumber(skip=0):int =
         var n = 0
@@ -317,8 +317,8 @@ solution(5): #doesn't work yet
         var sy = sgn(y2-y1)
         var orto = x1 == x2 or y1 == y2
         
-        var Z = (x1 shl 10) xor y1
-        var DZ = ((sx) shl 10) xor (sy)
+        var Z = (x1 shl 10) + y1
+        var DZ = ((sx) shl 10) + (sy)
         
         for i in 0..max(abs(x1-x2),abs(y1-y2)):
             total += 1
@@ -334,7 +334,7 @@ solution(5): #doesn't work yet
         if pa1[i]+pa2[i]>1: c2 += 1
     return ($c1, $c2)
 
-solution(5):
+solution(-5):
     var i = 0
     template scanNumber(skip=0):int =
         var n = 0
