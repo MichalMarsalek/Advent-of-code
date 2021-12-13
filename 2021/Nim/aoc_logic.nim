@@ -35,8 +35,8 @@ const
 
 type Grid*[T] = seq[seq[T]]
 type Point* = (int, int)
-template x*(p:Point):int = p[0]
-template y*(p:Point):int = p[1]
+func x*(p:Point):int = p[0]
+func y*(p:Point):int = p[1]
 
 template `[]`*[T](data:Grid[T], index:Point):T =
     data[index.y][index.x]
@@ -171,6 +171,7 @@ func neighboursRec*[T](data:Grid[T], p:Point, pred: proc (a,b:T):bool,
                     q.addLast (P,d+1)
 
 iterator coordinates*[T](data:Grid[T]):Point =
+    ## Yields all valid coordinates for the given grid.
     let height = len data
     let width = len data[0]
     for y in 0..<height:
@@ -189,3 +190,14 @@ func continuousAreas*[T](data:Grid[T], pred: proc (a,b:T):bool,
         visited = visited + area
         result.add area
 
+func plot*(points: openarray[Point]): string =
+    ## Plots a list of points to a 2D grid,
+    ## returns string representing the grid.
+    for y in points.map(y).min..points.map(y).max:
+        result &= '\n'
+        for x in points.map(x).min..points.map(x).max:
+            if (x,y) in points:
+                result &= "#"
+            else:
+                result &= ' '
+    

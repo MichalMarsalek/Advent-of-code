@@ -1,7 +1,7 @@
 include prelude
 import times, strscans, math, intsets, algorithm, stats, sugar, bitops, memo
 
-const days = 5..5
+const days = 12..12
 const repetitions = 1000
 var SOLUTIONS: array[26,proc (input:string):(string,string)]
 var INPUTS: array[26,string]
@@ -736,7 +736,7 @@ solution(12):
     traverse(start, p1)
     traverse(start, p2, true)
 
-solution(12):
+solution(12): # optimize this further by packing more densely and switching from table to array
     #parsing
     var ids: Table[string,int]
     var neighbours: array[20, array[20, int]]
