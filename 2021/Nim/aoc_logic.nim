@@ -51,7 +51,7 @@ func size*[T](data:Grid[T]):int =
     data.len * data[0].len
 
 template `+`*(a,b:Point):Point = (a.x+b.x, a.y+b.y)
-template `-`*(a:Point):Point = (-a.x, -b.x)
+template `-`*(a:Point):Point = (-a.x, -a.y)
 template `-`*(a,b:Point):Point = a + (-b)
 template `*`*(a:int,b:Point):Point = (a*b.x, a*b.y)
 

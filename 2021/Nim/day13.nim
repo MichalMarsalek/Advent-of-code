@@ -11,13 +11,9 @@ day 13:
         if ',' in L: points.incl (p[0], p[1])
     
     func fold(points: HashSet[Point], fold:Point): HashSet[Point] =
+        func abs(p:Point): Point = (abs p.x, abs p.y)
         for p in points:
-            if fold.x == 0 and p.y > fold.y:
-                result.incl (p.x, 2*fold.y - p.y)
-            elif fold.y == 0 and p.x > fold.x:
-                result.incl (2*fold.x - p.x, p.y)
-            else:
-                result.incl p
+            result.incl abs(fold - abs(fold - p))
     part 1:
         points.fold(folds[0]).len
     part 2:
