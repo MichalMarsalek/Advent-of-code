@@ -53,6 +53,8 @@ echo SOLUTIONS[k](getInputForDay(k))
 Apart from the general solutions I try to write separate speedy solutions (fast.nim).
 As is usual, I measure the time time it takes for a function which takes the input as a string a returns two strings representing the answer to return. Measuring how long it takes the OS to start the program or how long it takes the harddisk to read the input is kind of random and totally uninteresting to me. Each day is evaluated 10000 times.
 
+Output for day 13 part 2 is the ASCII art letters.
+
 | Day             	| Mean time        	|
 |-----------------	|---------------	|
 | 1              	| 0.046 ms       	|
@@ -67,5 +69,6 @@ As is usual, I measure the time time it takes for a function which takes the inp
 | 10              	| 0.026 ms       	|
 | 11              	| 0.113 ms       	|
 | 12              	| 0.174 ms       	|
+| 13              	| 0.215 ms       	|
 
 Intel(R) Core(TM) i5-7200U CPU @ 2.50GHz   2.70 GHz

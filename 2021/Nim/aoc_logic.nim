@@ -200,7 +200,7 @@ func plot*(points: openarray[Point]): string =
         result &= '\n'
         for x in xRange:
             if (x,y) in points:
-                result &= "#"
+                result &= "##"
             else:
-                result &= ' '
+                result &= "  "
     

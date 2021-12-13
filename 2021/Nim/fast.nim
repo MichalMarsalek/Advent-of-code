@@ -1,8 +1,8 @@
 include prelude
 import times, strscans, math, intsets, algorithm, stats, sugar, bitops, memo
 
-const days = 12..12
-const repetitions = 1000
+const days = 13..13
+const repetitions = 10000
 var SOLUTIONS: array[26,proc (input:string):(string,string)]
 var INPUTS: array[26,string]
 var OUTPUTS: array[26,(string,string)]
@@ -11,10 +11,11 @@ for day in days:
     INPUTS[day] = readFile("inputs\\day" & $day & ".in")
 
 template solution(d:int, code:untyped): untyped =
-    SOLUTIONS[d] = proc (input {.inject.}: string):(string, string) =
-        var p1 {.inject.},p2 {.inject.} = 0
-        code
-        return ($p1, $p2)    
+    when d in 1..25:
+        SOLUTIONS[d] = proc (input {.inject.}: string):(string, string) =
+            var p1 {.inject.},p2 {.inject.} = 0
+            code
+            return ($p1, $p2)
             
 solution(1):
     type part = tuple[start: int, len: int]
@@ -793,6 +794,49 @@ solution(12): # optimize this further by packing more densely and switching from
         memo[state] = result
     p1 = count_paths(start or (1 shl (start+6)))
     p2 = count_paths(start or (1 shl (start+6)) or 0b100000)
+
+solution(13):
+    #parsing
+    var points: array[1000, (int,int)]
+    var folds: array[12, (int,int)]
+    var result: array[40*6, char]
+    result.fill(' ')
+    for y in 0..5: result[y*40+39] = '\n'
+    let lines = input.splitLines
+    var pointsCount = 0
+    while lines[pointsCount] != "":
+        let (ok,x,y) = lines[pointsCount].scanTuple("$i,$i")
+        points[pointsCount] = (x,y)
+        inc pointsCount
+    for i in 1..12:
+        let number = lines[pointsCount + i][13..^1].parseInt
+        if lines[pointsCount + i][11] == 'x':
+            folds[i-1] = (number, 0)
+        else:
+            folds[i-1] = (0, number)
+    #part 1
+    var points2: IntSet
+    for i in 0..<pointsCount:
+        var p = points[i]
+        let f = folds[0]
+        if f[0] == 0 and p[1] > f[1]:
+            p = (p[0], 2*f[1] - p[1])
+        elif f[1] == 0 and p[0] > f[0]:
+            p = (2*f[0] - p[0], p[1])
+        points2.incl (p[0] shl 10 or p[1])
+    
+    #part 2
+    for i in 0..<pointsCount:
+        var p = points[i]
+        for f in folds:
+            if f[0] == 0 and p[1] > f[1]:
+                p = (p[0], 2*f[1] - p[1])
+            elif f[1] == 0 and p[0] > f[0]:
+                p = (2*f[0] - p[0], p[1])
+        result[p[0] + p[1]*40] = '#'
+    return ($points2.len, result.join)
+    
+            
     
         
             
