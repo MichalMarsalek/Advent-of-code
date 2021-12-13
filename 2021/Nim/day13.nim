@@ -1,17 +1,14 @@
 include aoc
 
 day 13:    
-    var parts_0 = input.split("\n\n")
     var points: HashSet[Point]
     var folds: seq[Point]
     
-    for L in parts_0[0].intgrid:
-        points.incl (L[0],L[1])
-    for L in parts_0[1].splitLines:
-        if 'y' in L:
-            folds.add (0, L.ints[0])
-        else:
-            folds.add (L.ints[0], 0)
+    for L in lines:
+        let p = L.ints
+        if 'x' in L: folds.add (p[0], 0)
+        if 'y' in L: folds.add (0, p[0])
+        if ',' in L: points.incl (p[0], p[1])
     
     func fold(points: HashSet[Point], fold:Point): HashSet[Point] =
         for p in points:
@@ -27,4 +24,3 @@ day 13:
         for f in folds:
             points = points.fold(f)
         points.toSeq.plot
-        

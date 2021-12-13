@@ -193,9 +193,12 @@ func continuousAreas*[T](data:Grid[T], pred: proc (a,b:T):bool,
 func plot*(points: openarray[Point]): string =
     ## Plots a list of points to a 2D grid,
     ## returns string representing the grid.
-    for y in points.map(y).min..points.map(y).max:
+    let xRange = points.map(x).min..points.map(x).max
+    let yRange = points.map(y).min..points.map(y).max
+    result = "Y = " & $yRange & ", X = " & $xRange
+    for y in yRange:
         result &= '\n'
-        for x in points.map(x).min..points.map(x).max:
+        for x in xRange:
             if (x,y) in points:
                 result &= "#"
             else:
