@@ -38,6 +38,10 @@ type Point* = (int, int)
 func x*(p:Point):int = p[0]
 func y*(p:Point):int = p[1]
 
+proc initGrid*[T](width, height: int):Grid[T] =
+    for y in 0..<height:
+        result.add newSeq[T](width)
+
 template `[]`*[T](data:Grid[T], index:Point):T =
     data[index.y][index.x]
 template `[]`*[T](data:Grid[T], x,y:int):T =
@@ -141,6 +145,9 @@ func medianHigh*[T](data: seq[T]):T =
     data.sorted[data.len div 2 + 1]
 
 
+func height*(data:Grid):int = len data
+func width*(data:Grid):int = len data[0]
+
 iterator neighbours*(p:Point,directions:openarray[Point]=directions4):Point =
     ## Returns all neighbours of a lattice point.
     for d in directions:
@@ -150,10 +157,8 @@ iterator neighbours*[T](data:Grid[T], p:Point,
                         directions:openarray[Point]=directions4):Point =
     ## Returns all neighbours of a lattice that
     ## are a valid indeces to the given data.
-    let height = len data
-    let width = len data[0]
     for (X,Y) in neighbours(p,directions):
-        if 0 <= X and X < width and 0 <= Y and Y < height:
+        if 0 <= X and X < data.width and 0 <= Y and Y < data.height:
             yield (X,Y)
 
 func neighboursRec*[T](data:Grid[T], p:Point, pred: proc (a,b:T):bool,
