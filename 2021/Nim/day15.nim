@@ -1,13 +1,14 @@
 include aoc
 import heapqueue
 
+proc `<`(a, b: (Point, int)): bool = a[1] < b[1]
+       
 func shortestDistance(grid: Grid[int], a, b: Point):int =
     var dist = {a: 0}.toTable
     var seen = [a].toHashSet
-    var q = [a].toHeapQueue
-    proc `<`(a, b: Point): bool = dist[a] < dist[b]
+    var q = {a:0}.toHeapQueue
     while true:
-        let v = q.pop
+        let v = q.pop[0]
         if v == b: return dist[b]
         seen.incl v
         for u in grid.neighbours(v):
@@ -15,7 +16,7 @@ func shortestDistance(grid: Grid[int], a, b: Point):int =
                 let newCost = dist[v] + grid[u]
                 if newCost < dist.getOrDefault(u, 2^60):                
                     dist[u] = newCost
-                    q.push u
+                    q.push (u, dist[u])
 
 day 15:   
     let grid = lines.map(L => L.mapIt(parseInt $it))

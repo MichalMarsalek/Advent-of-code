@@ -59,6 +59,8 @@ template `-`*(a:Point):Point = (-a.x, -a.y)
 template `-`*(a,b:Point):Point = a + (-b)
 template `*`*(a:int,b:Point):Point = (a*b.x, a*b.y)
 
+func norm1*(a:Point):int = abs(a.x) + abs(a.y)
+
 
 
 func drop*[T](s: seq[T], d: int):seq[T] =
