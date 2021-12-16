@@ -1,8 +1,8 @@
 include prelude
 import times, strscans, math, intsets, algorithm, stats, sugar, bitops, memo
 
-const days = 13..13
-const repetitions = 10000
+const days = 15..15
+const repetitions = 1000
 var SOLUTIONS: array[26,proc (input:string):(string,string)]
 var INPUTS: array[26,string]
 var OUTPUTS: array[26,(string,string)]
@@ -836,8 +836,47 @@ solution(13):
         result[p[0] + p[1]*40] = '#'
     return ($points2.len, result.join)
     
-            
+solution(14):
+    return ("","")
+
+solution(15):
+    #parsing
+    var prices:array[501*502,int8]
+    var dist:array[501*502,int16]
+    dist.fill(int16.high)
+    var seen:array[501*502,bool]
+    var buffers:array[11,seq[int]]
+    var buffer_i = 0
+    for i in 0..500: seen[i] = true
+    for i in 0..500: seen[i*501+500] = true
+    for i in (501*501)..<(501*502): seen[i] = true
+    for y in 0..499:
+        for x in 0..499:
+            prices[501*(y+1)+x] = int8((input[101*(y mod 100) + (x mod 100)].ord + y div 100 + x div 100 - 40) mod 9 + 1)
     
+    proc push(x:int, priority:int) =
+        let bi = priority mod 11
+        buffers[bi].add x
+    proc pop(): int =
+        while buffers[buffer_i].len == 0:
+            buffer_i = (buffer_i + 1) mod 11
+        return pop buffers[buffer_i]
+    push(501,0)
+    dist[501] = 0
+    
+    let goal = 501*501 - 2
+    while true:
+        let v = pop()
+        if v == goal: break
+        seen[v] = true
+        for u in [v-501,v-1,v+1,v+501]:
+            if not seen[u]:
+                let newCost = dist[v] + prices[u]
+                if newCost < dist[u]:                
+                    dist[u] = newCost
+                    push(u,dist[u])
+    p1 = dist[100*501 + 99]
+    p2 = dist[goal]
         
             
     
