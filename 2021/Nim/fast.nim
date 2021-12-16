@@ -860,9 +860,7 @@ solution(14):
         rules[p[0]] = p[1][0]
         
     p1 = solve(templ, rules, 10)
-    p2 = solve(templ, rules, 40)
-
-solution(14):
+    p2 = solve(templ, rules, 40)    
 
 solution(15):
     #parsing
