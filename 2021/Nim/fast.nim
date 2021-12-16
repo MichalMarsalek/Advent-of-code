@@ -1,7 +1,7 @@
 include prelude
 import times, strscans, math, intsets, algorithm, stats, sugar, bitops, memo
 
-const days = 15..15
+const days = 14..14
 const repetitions = 1000
 var SOLUTIONS: array[26,proc (input:string):(string,string)]
 var INPUTS: array[26,string]
@@ -837,7 +837,32 @@ solution(13):
     return ($points2.len, result.join)
     
 solution(14):
-    return ("","")
+    func nxt(pairs: CountTable[string], rules:Table[string,char]):CountTable[string] =
+        for k,v in pairs:
+            if k in rules:
+                result.inc(k[0] & rules[k], v)
+                result.inc(rules[k] & k[1], v)
+    
+    func solve(templ:string, rules:Table[string, char], rounds:int):int =
+        var s = mapIt(1..<templ.len, templ[it-1..it]).toCountTable
+        for _ in 1..rounds:
+            s = s.nxt(rules)
+        var counts = [templ[0]].toCountTable
+        for k,v in s:
+            counts.inc(k[1], v)
+        counts.largest[1] - counts.smallest[1]
+    
+    let lines = input.strip.splitLines
+    let templ = lines[0]
+    var rules:Table[string, char]
+    for L in lines[2..^1]:
+        let p = L.split(" -> ")
+        rules[p[0]] = p[1][0]
+        
+    p1 = solve(templ, rules, 10)
+    p2 = solve(templ, rules, 40)
+
+solution(14):
 
 solution(15):
     #parsing
@@ -878,7 +903,56 @@ solution(15):
     p1 = dist[100*501 + 99]
     p2 = dist[goal]
         
-            
+
+solution(16):
+    #var input = "38006F45291200"
+    var data: array[6000,int]
+    var i = 0
+    for c in input:
+        let v = c.ord - (if c >= 'A': 55 else: 48)
+        data[i] = v shr 3 and 1; inc i
+        data[i] = v shr 2 and 1; inc i
+        data[i] = v shr 1 and 1; inc i
+        data[i] = v shr 0 and 1; inc i
+    i = 0
+    proc scanNumber(size:int):int =
+        for _ in 1..size:
+            result = result shl 1 or data[i]
+            inc i
+    
+    proc parse(): int =
+        p1 += scanNumber(3)
+        let typeID = scanNumber(3)
+        if typeID == 4:
+            while true:
+                let temp = scanNumber(5)
+                if temp >= 16:
+                    result = result shl 4 + temp and 0b1111
+                else:
+                    return result shl 4 + temp
+        let lengthType = scanNumber(1)
+        var children:seq[int]
+        if lengthType == 0: 
+            let bitLength = scanNumber(15)
+            let target = i + bitLength
+            while target > i:
+                children.add parse()
+        else:
+            let packetCount = scanNumber(11)
+            while children.len < packetCount:
+                children.add parse()
+        return case typeID
+        of 0: children.sum
+        of 1: children.prod
+        of 2: children.min
+        of 3: children.max
+        of 5: int(children[0] >  children[1])
+        of 6: int(children[0] <  children[1])
+        else: int(children[0] == children[1])
+    
+    i = 0
+    p2 = parse()
+        
     
 
 var total_time = 0.0
