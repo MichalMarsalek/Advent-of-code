@@ -105,7 +105,7 @@ day 18:
     
     func `+`(a,b: NodeRef): NodeRef =
         ## Adds two snailfish numbers.
-        result = newNode(a,b)
+        result = newNode(deepcopy a, deepcopy b)
         toReduce result
     
     func magnitude(a: NodeRef): int =
@@ -113,10 +113,11 @@ day 18:
         if a.left == nil: return a.value
         return 3*a.left.magnitude + 2*a.right.magnitude
     
+    let numbers = lines.map(parse)
     part 1:
-        return magnitude lines.map(parse).foldl(a+b)
+        return magnitude numbers.foldl(a + b)
     part 2,int:
-        for a in lines:
-            for b in lines:
-                if a != b:
-                    result = max(result, magnitude (parse(a) + parse(b)))
+        for i,a in numbers:
+            for j,b in numbers:
+                if i != j:
+                    result = max(result, magnitude(a+b))
