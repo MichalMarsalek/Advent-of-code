@@ -1,5 +1,5 @@
 include prelude
-import re, macros, httpclient, net, algorithm, times, math, strscans, deques
+import re, macros, httpclient, net, algorithm, times, math, strscans, deques, sugar
 
 var SOLUTIONS*: Table[int, proc (x:string):Table[int,string]]
 
@@ -210,4 +210,66 @@ func plot*(points: openarray[Point]): string =
                 result &= "##"
             else:
                 result &= "  "
-    
+
+type RangeUnion* = object
+    ranges*:seq[(int,int)]
+let emptyRangeUnion* = RangeUnion(ranges: @[])
+func `$`*(ru: RangeUnion):string =
+    if ru.ranges.len == 0: return "{}"
+    return ru.ranges.join(" u ")
+
+func `+`*(ru: RangeUnion, range:(int,int)): RangeUnion =
+    if range[1] < range[0]: return ru
+    var i = 0
+    while i < ru.ranges.len and ru.ranges[i][1] < range[0]-1:
+        result.ranges.add ru.ranges[i]
+        inc i
+    if i == ru.ranges.len:
+        result.ranges.add range
+        return
+    let start = min(ru.ranges[i][0], range[0])
+    while i < ru.ranges.len and ru.ranges[i][0] <= range[1]+1:
+        inc i
+    let finish = if i == 0: range[1] else: max(ru.ranges[i-1][1], range[1])
+    result.ranges.add (start, finish)
+    while i < ru.ranges.len:
+        result.ranges.add ru.ranges[i]
+        inc i
+        
+func `+`*(a,b: RangeUnion): RangeUnion =
+    result = a
+    for r in b.ranges:
+        result = result + r
+
+func card*(ru: RangeUnion): int =
+    ru.ranges.mapIt(it[1]-it[0]+1).sum
+
+type Rectangle* = (Point, Point)
+func sortedByXLowPairwiseIntersections*(rects: seq[Rectangle]):seq[Rectangle] =
+    for i in 0..<rects.len:
+        var j = i + 1
+        while j < rects.len and rects[j][0].x <= rects[i][1].x:
+            let minx = rects[j][0].x
+            let maxx = min(rects[j][1].x, rects[i][1].x)
+            let maxy = min(rects[j][1].y, rects[i][1].y)
+            let miny = max(rects[j][0].y, rects[i][0].y)
+            if minx <= maxx and miny <= maxy and rects[i] != rects[j]:
+                dump (i,j)
+                result.add ((minx, miny),(maxx,maxy))   
+            inc j
+
+func area*(rect:Rectangle):int =
+    (rect[1].x - rect[0].x + 1)*(rect[1].y - rect[0].y + 1)
+
+func unionArea*(rects: seq[Rectangle]):int =
+    var rects = rects.sortedByIt(it[0].x)
+    var sign = 1
+    while rects.len > 0:
+        dump rects
+        result += sign * rects.map(area).sum
+        rects = sortedByXLowPairwiseIntersections(rects)
+        sign *= -1    
+
+if isMainModule:
+    let rects = @[((0,0),(10,10)), ((5,5),(15,15)),((7,2),(12,7))]
+    echo unionArea rects
