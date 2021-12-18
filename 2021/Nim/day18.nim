@@ -103,7 +103,7 @@ day 18:
             if toExplode(number): continue
             if not toSplit(number): break
     
-    func add(a,b: NodeRef): NodeRef =
+    func `+`(a,b: NodeRef): NodeRef =
         ## Adds two snailfish numbers.
         result = newNode(a,b)
         toReduce result
@@ -114,12 +114,9 @@ day 18:
         return 3*a.left.magnitude + 2*a.right.magnitude
     
     part 1:
-        var temp = parse lines[0]
-        for L in lines[1..^1]:
-            temp = temp.add parse L
-        return magnitude temp
+        return magnitude lines.map(parse).foldl(a+b)
     part 2,int:
         for a in lines:
             for b in lines:
                 if a != b:
-                    result = max(result, magnitude add(parse a, parse b))
+                    result = max(result, magnitude (parse(a) + parse(b)))
