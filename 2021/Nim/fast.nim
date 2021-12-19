@@ -1,7 +1,7 @@
 include prelude
 import times, strscans, math, intsets, algorithm, stats, sugar, bitops, memo
 
-const days = 17..18
+const days = 19..19
 const repetitions = 100
 var SOLUTIONS: array[26,proc (input:string):(string,string)]
 var INPUTS: array[26,string]
@@ -1212,7 +1212,92 @@ solution(18):
     #echo toSplit t1
     #echo deb t1
     p1 = magnitude numbers.foldl(a + b)
-        
+
+solution(19):
+    var scanners = input.strip.split("\n\n").map(B => B.splitLines[1..^1].map ints3)
+    var fingerprints: seq[Table[int,(int, int)]]
+    for scanner in scanners:
+        var t:Table[int,(int, int)]
+        for i,a in scanner:
+            for j in 0..<i:
+                let b = scanner[j]
+                t[(a.x-b.x)^2 + (a.y-b.y)^2 + (a.z-b.z)^2] = (i,j)
+        fingerprints.add t
+    var fixed = [0].toHashSet
+    var notFixed = (1..<scanners.len).toSeq.toHashSet
+    #notFixed = [4].toHashSet
+    
+    type Transform = tuple[perm, signs, shift: Point3]
+    
+    iterator findTransform(fixed, other: (Point3, Point3)): Transform =
+        let dFixed = fixed[1] - fixed[0]
+        let dOther0 = other[1] - other[0]
+        let dOther = [dOther0.x, dOther0.y, dOther0.z]
+        let other0 = [other[0].x, other[0].y, other[0].z]
+        let other1 = [other[1].x, other[1].y, other[1].z]
+        for (a,b,c) in [(0,1,2),(0,2,1),(1,0,2),(1,2,0),(2,0,1),(2,1,0)]:
+            for Sx in [-1,1]:
+              for Sy in [-1,1]:
+               for Sz in [-1,1]:            
+                if dFixed[0] == dOther[a]*Sx and dFixed[1] == dOther[b]*Sy and  dFixed[2] == dOther[c]*Sz:
+                    var sx = Sx * other0[a] - fixed[0].x
+                    var sy = Sy * other0[b] - fixed[0].y
+                    var sz = Sz * other0[c] - fixed[0].z
+                    yield ((a,b,c), (Sx,Sy,Sz), (sx,sy,sz))
+                    sx = -Sx * other1[a] - fixed[0].x
+                    sy = -Sy * other1[b] - fixed[0].y
+                    sz = -Sz * other1[c] - fixed[0].z
+                    yield ((a,b,c), -(Sx,Sy,Sz), (sx,sy,sz))
+                    break
+    
+    func applyTrans(p: Point3, trans:Transform): Point3 =
+        let pp = [p.x, p.y, p.z]
+        return (pp[trans.perm.x] * trans.signs.x,
+                pp[trans.perm.y] * trans.signs.y,
+                pp[trans.perm.z] * trans.signs.z) - trans.shift
+    
+    var shifts:seq[Point3]
+    
+    proc fix(j:int, transform:Transform) =
+        fixed.incl j
+        notFixed.excl j
+        shifts.add transform.shift
+        scanners[j] = scanners[j].mapIt(it.applyTrans transform)
+    
+    while notFixed.card > 0:
+        block step:
+            for i in fixed:
+                for j in notFixed:
+                    let overlap = fingerprints[i].keys.toSeq.toHashSet *  fingerprints[j].keys.toSeq.toHashSet
+                    #dump (i,j, fixed, notFixed, overlap.len)
+                    if overlap.card >= 66:
+                        #echo (i, j, overlap.len)
+                        var transforms: CountTable[Transform]
+                        for d in overlap:  
+                            let a = (scanners[i][fingerprints[i][d][0]],scanners[i][fingerprints[i][d][1]])
+                            let b = (scanners[j][fingerprints[j][d][0]],scanners[j][fingerprints[j][d][1]])
+                            for trans in findTransform(a,b):
+                                #dump a
+                                #dump b
+                                #dump trans
+                                #debugecho ""
+                                transforms.inc trans
+                        let top = transforms.largest
+                        #dump top
+                        if top.val >= 66:
+                            fix(j, top.key)
+                            break step
+                        else:
+                            discard
+                            #dump transforms
+    var beacons: HashSet[Point3]
+    for s in scanners:
+        for p in s:
+            beacons.incl p
+    p1 = beacons.card
+    for i,s1 in shifts:
+        for s2 in shifts[0..<i]:
+            p2 = max(p2, norm1(s1-s2))
 
 var total_time = 0.0
 for day in days:
