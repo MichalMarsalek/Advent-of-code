@@ -3,7 +3,7 @@ include aoc
 day 12:    
     var neighbours: Table[string,seq[string]]
     for line in lines:
-        let (_,x,y) = line.scanTuple("$w-$w")
+        let (x,y) = line.scanTuple("$w-$w")
         neighbours.mgetOrPut(x, @[]).add y
         neighbours.mgetOrPut(y, @[]).add x
     

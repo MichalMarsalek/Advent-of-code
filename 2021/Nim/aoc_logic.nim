@@ -35,8 +35,12 @@ const
 
 type Grid*[T] = seq[seq[T]]
 type Point* = (int, int)
+type Point3* = (int,int,int)
 func x*(p:Point):int = p[0]
 func y*(p:Point):int = p[1]
+func x*(p:Point3):int = p[0]
+func y*(p:Point3):int = p[1]
+func z*(p:Point3):int = p[2]
 
 proc initGrid*[T](width, height: int):Grid[T] =
     for y in 0..<height:
@@ -58,8 +62,13 @@ template `+`*(a,b:Point):Point = (a.x+b.x, a.y+b.y)
 template `-`*(a:Point):Point = (-a.x, -a.y)
 template `-`*(a,b:Point):Point = a + (-b)
 template `*`*(a:int,b:Point):Point = (a*b.x, a*b.y)
-
 func norm1*(a:Point):int = abs(a.x) + abs(a.y)
+
+template `+`*(a,b:Point3):Point3 = (a.x+b.x, a.y+b.y, a.z+b.z)
+template `-`*(a:Point3):Point3 = (-a.x, -a.y, -a.z)
+template `-`*(a,b:Point3):Point3 = a + (-b)
+template `*`*(a:int,b:Point3):Point3 = (a*b.x, a*b.y, a*b.z)
+func norm1*(a:Point3):int = abs(a.x) + abs(a.y)+ abs(a.z)
 
 
 
@@ -77,6 +86,31 @@ func grid*(data:string, sep:string = ""): Grid[string] =
 func ints*(data:string): seq[int] =
     ## Returns all ints < 10^9 present in the input text.
     data.findAll(re"-?\d+").filterIt(it.len <= 18).map(parseInt)
+
+##TODO make this general using macros
+func ints1*(data:string): int =
+    ## Returns the first int < 10^9 present in the input text.
+    data.ints[0]
+func ints2*(data:string): auto =
+    ## Returns the first two ints < 10^9 present in the input text.
+    let ints = data.ints
+    (ints[0], ints[1])
+func ints3*(data:string): auto =
+    ## Returns the first three ints < 10^9 present in the input text.
+    let ints = data.ints
+    (ints[0], ints[1], ints[2])
+func ints4*(data:string): auto =
+    ## Returns the first four ints < 10^9 present in the input text.
+    let ints = data.ints
+    (ints[0], ints[1], ints[2], ints[3])
+func ints5*(data:string): auto =
+    ## Returns the first five ints < 10^9 present in the input text.
+    let ints = data.ints
+    (ints[0], ints[1], ints[2], ints[3], ints[4])
+func ints6*(data:string): auto =
+    ## Returns the first six ints < 10^9 present in the input text.
+    let ints = data.ints
+    (ints[0], ints[1], ints[2], ints[3], ints[4], ints[5])
 
 func intGrid*(data:string): Grid[int] =
     ## Returns a matrix of ints present in the input text
