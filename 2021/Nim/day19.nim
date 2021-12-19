@@ -2,17 +2,8 @@ include aoc
 
 day 19:
     func rotated(p,perm,signs:Point3):Point3 =
-        var r: Point3
-        if perm[0] == 0: r[0] = p[0]
-        if perm[0] == 1: r[0] = p[1]
-        if perm[0] == 2: r[0] = p[2]
-        if perm[1] == 0: r[1] = p[0]
-        if perm[1] == 1: r[1] = p[1]
-        if perm[1] == 2: r[1] = p[2]
-        if perm[2] == 0: r[2] = p[0]
-        if perm[2] == 1: r[2] = p[1]
-        if perm[2] == 2: r[2] = p[2]
-        return (signs.x*r.x,signs.y*r.y,signs.z*r.z)
+        let pp = [p.x,p.y,p.z]
+        (signs.x*pp[perm.x],signs.y*pp[perm.y],signs.z*pp[perm.z])
     var rotations: seq[(Point3,Point3)]
     for sx in [-1,1]:
         for sy in [-1,1]:
