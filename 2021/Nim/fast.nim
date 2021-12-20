@@ -1,8 +1,8 @@
 include prelude
 import times, strscans, math, intsets, algorithm, stats, sugar, bitops, memo
 
-const days = 1..20
-const repetitions = 1000
+const days = 18..18
+const repetitions = 100
 var SOLUTIONS: array[26,proc (input:string):(string,string)]
 var INPUTS: array[26,string]
 var OUTPUTS: array[26,(string,string)]
@@ -1138,6 +1138,32 @@ solution(18):
         elif c == ',':discard
         else:
             numbers[i].add (c.ord-48, int8 depth)
+    
+    proc toRepeatedExplode0(number: var Number) =
+        # TODO this should be done in 1 pass to be useful
+        var deleted: seq[int]
+        var i = 0
+        while i < number.len:
+            if number[i].depth == 5:
+                if i > 0:
+                    number[i-1].val += number[i].val
+                if i < number.len - 2:
+                    number[i+2].val += number[i+1].val
+                number[i+1] = (0, number[i].depth-1i8)
+                deleted.add i
+                inc i
+            inc i
+        deleted.add number.len
+        var cdeleted = 1
+        var last = deleted[0]
+        for ix,d in deleted:
+            if ix == 0:continue
+            for i in last+1..<d:
+                number[i-cdeleted] = number[i]
+            inc cdeleted
+            last = d
+        number.setLen number.len-cdeleted+1
+    
     proc toExplode(number: var Number, hint=0): int =
         for i in hint..<number.len:
             if number[i].depth == 5:
@@ -1162,15 +1188,11 @@ solution(18):
         return -1
         
     proc toReduce(number: var Number) =
-        var start = 0
-        while start >= 0:
-            start = toExplode(number, start)
         while true:
-            start = toSplit(number, max(0, start-1))
-            if start < 0: return
-            start = toExplode(number, start)
-            if start < 0: return
-            
+            var start = 0
+            while start >= 0:
+                start = toExplode(number, start)            
+            if toSplit(number, 0) < 0: return
     
     func `+`(a,b: Number): Number =
         result = a & b

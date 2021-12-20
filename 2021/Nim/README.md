@@ -74,7 +74,7 @@ Output for day 13 part 2 is the ASCII art letters.
 | 15              	| 11.698 ms      	|
 | 16              	| 0.017 ms      	|
 | 17              	| 0.049 ms      	|
-| 18              	| 10.829 ms      	|
+| 18              	| 13.979 ms      	|
 | 19              	| 12.192 ms      	|
 | 20              	| 3.431 ms      	|
 

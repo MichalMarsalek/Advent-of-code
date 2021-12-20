@@ -114,8 +114,7 @@ day 18:
         return 3*a.left.magnitude + 2*a.right.magnitude
     
     let numbers = lines.map(parse)
-    part 1:
-        return magnitude numbers.foldl(a + b)
+    part 1: magnitude numbers.foldl(a + b)
     part 2,int:
         for i,a in numbers:
             for j,b in numbers:
