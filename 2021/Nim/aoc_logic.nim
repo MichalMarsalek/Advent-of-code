@@ -19,10 +19,16 @@ template day*(day:int, solution:untyped):untyped =
     if isMainModule:
         run day
 
-template part*(p:int, t=auto, solution:untyped):untyped =
+template part*(p:int, t:type, solution:untyped):untyped =
     ## Defines a part solution function.
     parts[p] = proc ():string =
         proc inner():t =
+            solution
+        return $inner()
+template part*(p:int, solution:untyped):untyped =
+    ## Defines a part solution function.
+    parts[p] = proc ():string =
+        proc inner():auto =
             solution
         return $inner()
 
@@ -30,7 +36,8 @@ template part*(p:int, t=auto, solution:untyped):untyped =
 
 ## Common direction vectors
 const
- directions8* = [(-1, -1), (0, -1), (1, -1), (1, 0), (1, 1), (0, 1), (-1, 1), (-1, 0)]
+ directions9* = [(-1, -1), (0, -1), (1, -1), (-1, 0), (0, 0), (1, 0), (-1, 1), (0, 1), (1, 1)]
+ directions8* = [(-1, -1), (0, -1), (1, -1), (-1, 0), (1, 0), (-1, 1), (0, 1), (1, 1)]
  directions4* = [(0, -1), (1, 0), (0, 1), (-1, 0)]
 
 type Grid*[T] = seq[seq[T]]
@@ -241,9 +248,9 @@ func plot*(points: openarray[Point]): string =
         result &= '\n'
         for x in xRange:
             if (x,y) in points:
-                result &= "##"
+                result &= "#"
             else:
-                result &= "  "
+                result &= " "
 
 type RangeUnion* = object
     ranges*:seq[(int,int)]
