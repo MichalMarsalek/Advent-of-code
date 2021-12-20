@@ -50,8 +50,9 @@ func y*(p:Point3):int = p[1]
 func z*(p:Point3):int = p[2]
 
 proc initGrid*[T](width, height: int):Grid[T] =
+    result = newSeq[seq[T]](height)
     for y in 0..<height:
-        result.add newSeq[T](width)
+        result[y] = newSeq[T](width)
 
 template `[]`*[T](data:Grid[T], index:Point):T =
     data[index.y][index.x]
