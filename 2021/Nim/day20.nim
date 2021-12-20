@@ -9,7 +9,7 @@ day 20:
     for y,L in lines[2..^1]:
         for x,c in L:
             if c == '#':
-                grid.incl (x,y-2)
+                grid.incl (x,y)
     var odd = false
     
     proc nxt(grid:HashSet[Point]):HashSet[Point] =
@@ -23,14 +23,12 @@ day 20:
                     result.incl (x,y)
             
     part 1,int:
-        var grid2 = grid.nxt.nxt
+        var grid2 = (nxt^2)(grid)
         for x in -25..125:
             for y in -25..125:
                 result += int((x,y) in grid2)
     part 2,int:
-        var grid2 = grid
-        for _ in 1..50:
-            grid2 = grid2.nxt
+        var grid2 = (nxt^50)(grid)
         for x in -60..160:
             for y in -60..160:
                 result += int((x,y) in grid2)

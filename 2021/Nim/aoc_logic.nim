@@ -309,7 +309,13 @@ func unionArea*(rects: seq[Rectangle]):int =
         dump rects
         result += sign * rects.map(area).sum
         rects = sortedByXLowPairwiseIntersections(rects)
-        sign *= -1    
+        sign *= -1
+    
+func `^`*[T](fun: T -> T, exp:int): (T -> T) =
+    return proc(inp: T):T =
+        result = inp
+        for _ in 1..exp:
+            result = fun result
 
 if isMainModule:
     let rects = @[((0,0),(10,10)), ((5,5),(15,15)),((7,2),(12,7))]
