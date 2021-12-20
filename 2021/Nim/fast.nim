@@ -1270,30 +1270,34 @@ solution(19):
             for i in fixed:
                 for j in notFixed:
                     if (i,j) in tried: continue
-                    let overlap = fingerprints[i].keys.toSeq.toHashSet *  fingerprints[j].keys.toSeq.toHashSet
+                    var overlap: array[200,int]
+                    var overlap_count = 0
+                    for a in fingerprints[i].keys:
+                        if a in fingerprints[j]:
+                            overlap[overlap_count] = a
+                            inc overlap_count
                     #dump (i,j, fixed, notFixed, overlap.len)
-                    if overlap.card >= 66:
+                    if overlap_count >= 66:
                         #echo (i, j, overlap.len)
-                        var transforms: CountTable[Transform]
-                        for d in overlap:  
-                            let a = (scanners[i][fingerprints[i][d][0]],scanners[i][fingerprints[i][d][1]])
-                            let b = (scanners[j][fingerprints[j][d][0]],scanners[j][fingerprints[j][d][1]])
-                            for trans in findTransform(a,b):
-                                #dump a
-                                #dump b
-                                #dump trans
-                                #debugecho ""
-                                transforms.inc trans
-                        let top = transforms.largest
-                        #dump top
-                        if top.val >= 66:
-                            fix(j, top.key)
-                            break step
+                        var transforms: HashSet[Transform]
+                        var top: Transform
+                        block loopD:
+                            for di in 0..<overlap_count:
+                                let d = overlap[di]
+                                let a = (scanners[i][fingerprints[i][d][0]],scanners[i][fingerprints[i][d][1]])
+                                let b = (scanners[j][fingerprints[j][d][0]],scanners[j][fingerprints[j][d][1]])
+                                for trans in findTransform(a,b):
+                                    if trans in transforms:
+                                        top = trans
+                                        break loopD
+                                    transforms.incl trans
+                        fix(j, top)
+                        break step
                     tried.incl (i,j)
-    var beacons: HashSet[Point3]
+    var beacons: IntSet
     for s in scanners:
         for p in s:
-            beacons.incl p
+            beacons.incl p.x shl 40 or p.y shl 20 or p.z
     p1 = beacons.card
     for i,s1 in shifts:
         for s2 in shifts[0..<i]:
