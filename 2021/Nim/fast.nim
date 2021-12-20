@@ -1,7 +1,7 @@
 include prelude
 import times, strscans, math, intsets, algorithm, stats, sugar, bitops, memo
 
-const days = 19..19
+const days = 1..20
 const repetitions = 1000
 var SOLUTIONS: array[26,proc (input:string):(string,string)]
 var INPUTS: array[26,string]
@@ -1118,100 +1118,83 @@ solution(18):
     let numbers = input.splitLines.map(parse)
     p1 = magnitude numbers.foldl(a + b)
     p2 = 0
-    return ($p1, "")
     for i,a in numbers:
         for j,b in numbers:
             if i != j:
                 p2 = max(p2, magnitude(a+b))
 
 solution(18):
-    type Number = seq[int8]
+    type Number = seq[tuple[val:int,depth:int8]]
     var numbers: array[100,Number]
-    var i = 0
+    var i,depth = 0
     for c in input:
         if c == '\n':
             inc i
-            continue
+            depth = 0
+        elif c == '[':
+            inc depth
+        elif c == ']':
+            dec depth
+        elif c == ',':discard
         else:
-            var val = int8(c) - 48i8
-            if val > 42: val -= 46
-            numbers[i].add val
-    
-    func deb(n:Number):string =
-        for c in n:
-            if c == -4: result &= ','
-            elif c == -3: result &= '['
-            elif c == -1: result &= ']'
-            else: result &= $c
-    
-    #for n in numbers:
-    #    echo deb n
-    
-    proc toExplode(number: var Number): bool =
-        var depth = 0
-        var i = 0
-        var leftTo, leftFrom, rightFrom, rightTo = -3
-        while i < number.len:
-            let n = number[i]
-            if n == -3:inc depth
-            elif n == -1: dec depth
-            elif n >= 0:
-                if leftFrom == -3:
-                    if depth == 5:
-                        leftFrom = i
-                        rightFrom = i+2
-                        i += 2
-                    else:
-                        leftTo = i
-                else:
-                    rightTo = i
-                    break
-            inc i
-        if leftFrom == -3: return false
-        let left = number[leftFrom]
-        let right = number[rightFrom]
-        number = number[0..leftFrom-2] & 0i8 & number[rightFrom+2..^1]
-        if leftTo >= 0: number[leftTo] += left
-        if rightTo >= 0: number[rightTo-4] += right
-        return true
-    
-    proc toSplit(number: var Number): bool =
-        var splitAt = -1
-        for i,n in number:
-            if n >= 10:
-                splitAt = i
-                break
-        if splitAt < 0: return false
-        number = number[0..splitAt-1] & (-3i8) & (number[splitAt] div 2) &
-                 (-4i8) & (number[splitAt] - number[splitAt] div 2) & (-1i8) &
-                 number[splitAt+1..^1]
-        return true
+            numbers[i].add (c.ord-48, int8 depth)
+    proc toExplode(number: var Number, hint=0): int =
+        for i in hint..<number.len:
+            if number[i].depth == 5:
+                if i > 0:
+                    number[i-1].val += number[i].val
+                if i < number.len - 2:
+                    number[i+2].val += number[i+1].val
+                number[i] = (0, number[i].depth-1i8)
+                number.delete(i+1)
+                return i
+        return -1
+            
+    proc toSplit(number: var Number, hint=0): int =
+        for i in hint..<number.len:
+            if number[i].val >= 10:
+                let left = number[i].val div 2
+                let right = number[i].val - left
+                let depth = number[i].depth + 1
+                number[i] = (left, depth)
+                number.insert((right, depth), i + 1)
+                return i
+        return -1
         
     proc toReduce(number: var Number) =
+        var start = 0
+        while start >= 0:
+            start = toExplode(number, start)
         while true:
-            if toExplode(number): continue
-            if not toSplit(number): break
+            start = toSplit(number, max(0, start-1))
+            if start < 0: return
+            start = toExplode(number, start)
+            if start < 0: return
+            
     
     func `+`(a,b: Number): Number =
-        result = (-3i8) & a & (-4i8) & b & (-1i8)
+        result = a & b
+        for i in 0..<result.len: inc result[i].depth
         toReduce result
     
     func magnitude(a: Number): int =
-        #dump a
-        var multiplier = 1
-        for n in a:
-            if n == -4: multiplier = (multiplier div 3) * 2
-            elif n == -3: multiplier *= 3
-            elif n == -1: multiplier = multiplier div 2
-            else: result += multiplier * n
+        var stack: Number
+        for pair in a:
+            var pair = pair
+            while stack.len > 0 and stack[^1].depth == pair.depth:
+                let left = pop stack
+                pair = (3*left.val + 2*pair.val, pair.depth - 1)
+            stack.add pair
+        assert stack.len == 1
+        assert stack[0].depth == 0
+        return stack[0].val
     
-    
-    #var t1 = numbers[0]
-    #t1[13]=15
-    #echo deb t1
-    #echo toSplit t1
-    #echo deb t1
     p1 = magnitude numbers.foldl(a + b)
+    p2 = 0
+    for i,a in numbers:
+        for j,b in numbers:
+            if i != j:
+                p2 = max(p2, magnitude(a+b))
 
 solution(19):
     var scanners = input.strip.split("\n\n").map(B => B.splitLines[1..^1].map ints3)
