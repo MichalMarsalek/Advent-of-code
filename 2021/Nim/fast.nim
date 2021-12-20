@@ -1,7 +1,7 @@
 include prelude
 import times, strscans, math, intsets, algorithm, stats, sugar, bitops, memo
 
-const days = 19..19
+const days = 20..20
 const repetitions = 100
 var SOLUTIONS: array[26,proc (input:string):(string,string)]
 var INPUTS: array[26,string]
@@ -1299,6 +1299,260 @@ solution(19):
     for i,s1 in shifts:
         for s2 in shifts[0..<i]:
             p2 = max(p2, norm1(s1-s2))
+
+solution(20):
+    var rules:array[512,int16]
+    var grids:array[2*200*200,int16]
+    for i in 0..511:
+        rules[i] = int16(input[i] == '#')
+    var default = 0i16
+    var current = 0
+    
+    var L = 50
+    var H = 149
+    for y in 0..99:
+        for x in 0..99:
+            grids[(L+y)*200 + L + x] = int16(input[514 + y*101 + x] == '#')
+            
+    proc get(x,y:int):int16 =
+        if x < L or x > H or y < L or y > H:
+            return default
+        grids[current + y*200+x]
+    
+    proc update() =
+        for x in L-1..H+1:
+            for y in L-1..H+1:
+                let index = get(x-1,y-1) shl 8 or
+                            get(x,y-1) shl 7 or
+                            get(x+1,y-1) shl 6 or
+                            get(x-1,y) shl 5 or
+                            get(x,y) shl 4 or
+                            get(x+1,y) shl 3 or
+                            get(x-1,y+1) shl 2 or
+                            get(x,y+1) shl 1 or
+                            get(x+1,y+1)
+                grids[40000-current + y*200+x] = rules[index]
+        L -= 1
+        H += 1
+        current = 40000 - current
+        default = 1i16 - default
+    
+    proc count(): int =
+        for x in L..H:
+            for y in L..H:
+                result += grids[current + y*200+x]
+    
+    update()
+    update()
+    p1 = count()
+    for _ in 3..50:
+        update()
+    p2 = count()
+ 
+solution(20):
+    var rules:array[512,int16]
+    var grid0:array[200*200,int16]
+    var grid1:array[200*200,int16]
+    for i in 0..511:
+        rules[i] = int16(input[i] == '#')
+    
+    var L = 50
+    var H = 149
+    for y in 0..99:
+        for x in 0..99:
+            grid0[(L+y)*200 + L + x] = int16(input[514 + y*101 + x] == '#')
+            
+    proc get0(x,y:int):int16 =
+        if x < L or x > H or y < L or y > H:
+            return 0i16
+        grid0[y*200+x]
+    proc get1(x,y:int):int16 =
+        if x < L or x > H or y < L or y > H:
+            return 1i16
+        grid1[y*200+x]
+    
+    proc update() =
+        for x in L-1..H+1:
+            for y in L-1..H+1:
+                let index = get0(x-1,y-1) shl 8 or
+                            get0(x,y-1)   shl 7 or
+                            get0(x+1,y-1) shl 6 or
+                            get0(x-1,y)   shl 5 or
+                            get0(x,y)     shl 4 or
+                            get0(x+1,y)   shl 3 or
+                            get0(x-1,y+1) shl 2 or
+                            get0(x,y+1)   shl 1 or
+                            get0(x+1,y+1)
+                grid1[y*200+x] = rules[index]
+        L -= 1
+        H += 1
+        for x in L-1..H+1:
+            for y in L-1..H+1:
+                let index = get1(x-1,y-1) shl 8 or
+                            get1(x,y-1)   shl 7 or
+                            get1(x+1,y-1) shl 6 or
+                            get1(x-1,y)   shl 5 or
+                            get1(x,y)     shl 4 or
+                            get1(x+1,y)   shl 3 or
+                            get1(x-1,y+1) shl 2 or
+                            get1(x,y+1)   shl 1 or
+                            get1(x+1,y+1)
+                grid0[y*200+x] = rules[index]
+        L -= 1
+        H += 1
+    
+    proc count(): int =
+        for x in L..H:
+            for y in L..H:
+                result += grid0[y*200+x]
+    
+    update()
+    p1 = count()
+    for _ in 1..24:
+        update()
+    p2 = count()
+
+solution(20):
+    var rules:array[512,int16]
+    var grid0:array[200*200,int16]
+    var grid1:array[200*200,int16]
+    for i in 0..511:
+        rules[i] = int16(input[i] == '#')
+    
+    var L = 50
+    var H = 149
+    for y in 0..99:
+        for x in 0..99:
+            grid0[(L+y)*200 + L + x] = int16(input[514 + y*101 + x] == '#')
+            
+    proc get0(x,y:int):int16 =
+        if x < L or x > H or y < L or y > H:
+            return 0i16
+        grid0[y*200+x]
+    proc get1(x,y:int):int16 =
+        if x < L or x > H or y < L or y > H:
+            return 1i16
+        grid1[y*200+x]
+    
+    template generalCase0():untyped {.dirty.} =
+        block:
+            let index = get0(x-1,y-1) shl 8 or
+                        get0(x,y-1)   shl 7 or
+                        get0(x+1,y-1) shl 6 or
+                        get0(x-1,y)   shl 5 or
+                        get0(x,y)     shl 4 or
+                        get0(x+1,y)   shl 3 or
+                        get0(x-1,y+1) shl 2 or
+                        get0(x,y+1)   shl 1 or
+                        get0(x+1,y+1)
+            grid1[y*200+x] = rules[index]
+    template generalCase1():untyped {.dirty.} =
+        block:
+            let index = get1(x-1,y-1) shl 8 or
+                        get1(x,y-1)   shl 7 or
+                        get1(x+1,y-1) shl 6 or
+                        get1(x-1,y)   shl 5 or
+                        get1(x,y)     shl 4 or
+                        get1(x+1,y)   shl 3 or
+                        get1(x-1,y+1) shl 2 or
+                        get1(x,y+1)   shl 1 or
+                        get1(x+1,y+1)
+            grid0[y*200+x] = rules[index]
+    
+    template innerCase0():untyped {.dirty.} =
+        block:
+            let index = grid0[i-201] shl 8 or
+                        grid0[i-200] shl 7 or
+                        grid0[i-199] shl 6 or
+                        grid0[i-1]   shl 5 or
+                        grid0[i]     shl 4 or
+                        grid0[i+1]   shl 3 or
+                        grid0[i+199] shl 2 or
+                        grid0[i+200] shl 1 or
+                        grid0[i+201]
+            grid1[i] = rules[index]
+    template innerCase1():untyped {.dirty.} =
+        block:
+            let index = grid1[i-201] shl 8 or
+                        grid1[i-200] shl 7 or
+                        grid1[i-199] shl 6 or
+                        grid1[i-1]   shl 5 or
+                        grid1[i]     shl 4 or
+                        grid1[i+1]   shl 3 or
+                        grid1[i+199] shl 2 or
+                        grid1[i+200] shl 1 or
+                        grid1[i+201]
+            grid0[i] = rules[index]
+    
+    
+    proc update() =
+        var x,y:int
+        y = L-1
+        for x in L-1..H+1:
+            generalCase0()
+        y = L
+        for x in L-1..H+1:
+            generalCase0()
+        for y in L+1..H-1:
+            x = L-1
+            generalCase0()
+            x = L
+            generalCase0()
+            var i = y*200 + L+1
+            for x in L+1..H-1:
+                innerCase0()
+                inc i
+            x = H
+            generalCase0()
+            x = H+1
+            generalCase0()
+        y = H
+        for x in L-1..H+1:
+            generalCase0()
+        y = H+1
+        for x in L-1..H+1:
+            generalCase0()
+        L -= 1
+        H += 1
+
+        y = L-1
+        for x in L-1..H+1:
+            generalCase1()
+        y = L
+        for x in L-1..H+1:
+            generalCase1()
+        for y in L+1..H-1:
+            x = L-1
+            generalCase1()
+            x = L
+            generalCase1()
+            var i = y*200 + L+1
+            for x in L+1..H-1:
+                innerCase1()
+                inc i
+            x = H
+            generalCase1()
+            x = H+1
+            generalCase1()
+        y = H
+        for x in L-1..H+1:
+            generalCase1()
+        y = H+1
+        for x in L-1..H+1:
+            generalCase1()
+        L -= 1
+        H += 1
+    
+    proc count(): int =
+        for x in L..H:
+            for y in L..H:
+                result += grid0[y*200+x]
+    
+    update()
+    p1 = count()
+    for _ in 1..24:
+        update()
+    p2 = count()
 
 var total_time = 0.0
 for day in days:
