@@ -1,8 +1,8 @@
 include prelude
 import times, strscans, math, intsets, algorithm, stats, sugar, bitops, memo
 
-const days = 20..20
-const repetitions = 100
+const days = 19..19
+const repetitions = 1000
 var SOLUTIONS: array[26,proc (input:string):(string,string)]
 var INPUTS: array[26,string]
 var OUTPUTS: array[26,(string,string)]
@@ -1225,7 +1225,6 @@ solution(19):
         fingerprints.add t
     var fixed = [0].toHashSet
     var notFixed = (1..<scanners.len).toSeq.toHashSet
-    #notFixed = [4].toHashSet
     
     type Transform = tuple[perm, signs, shift: Point3]
     
@@ -1235,11 +1234,12 @@ solution(19):
         let dOther = [dOther0.x, dOther0.y, dOther0.z]
         let other0 = [other[0].x, other[0].y, other[0].z]
         let other1 = [other[1].x, other[1].y, other[1].z]
-        for (a,b,c) in [(0,1,2),(0,2,1),(1,0,2),(1,2,0),(2,0,1),(2,1,0)]:
-            for Sx in [-1,1]:
-              for Sy in [-1,1]:
-               for Sz in [-1,1]:            
-                if dFixed[0] == dOther[a]*Sx and dFixed[1] == dOther[b]*Sy and  dFixed[2] == dOther[c]*Sz:
+        block all:
+            for (a,b,c) in [(0,1,2),(0,2,1),(1,0,2),(1,2,0),(2,0,1),(2,1,0)]:
+                if dFixed[0].abs == dOther[a].abs and dFixed[1].abs == dOther[b].abs and  dFixed[2].abs == dOther[c].abs:
+                 for Sx in (if dOther[a] == 0: @[-1,1] else: @[dFixed[0] div dOther[a]]):
+                  for Sy in (if dOther[b] == 0: @[-1,1] else: @[dFixed[1] div dOther[b]]):
+                   for Sz in (if dOther[c] == 0: @[-1,1] else: @[dFixed[2] div dOther[c]]):
                     var sx = Sx * other0[a] - fixed[0].x
                     var sy = Sy * other0[b] - fixed[0].y
                     var sz = Sz * other0[c] - fixed[0].z
@@ -1248,7 +1248,6 @@ solution(19):
                     sy = -Sy * other1[b] - fixed[0].y
                     sz = -Sz * other1[c] - fixed[0].z
                     yield ((a,b,c), -(Sx,Sy,Sz), (sx,sy,sz))
-                    break
     
     func applyTrans(p: Point3, trans:Transform): Point3 =
         let pp = [p.x, p.y, p.z]
