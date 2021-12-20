@@ -1264,10 +1264,13 @@ solution(19):
         shifts.add transform.shift
         scanners[j] = scanners[j].mapIt(it.applyTrans transform)
     
+    var tried: HashSet[(int,int)]
+    
     while notFixed.card > 0:
         block step:
             for i in fixed:
                 for j in notFixed:
+                    if (i,j) in tried: continue
                     let overlap = fingerprints[i].keys.toSeq.toHashSet *  fingerprints[j].keys.toSeq.toHashSet
                     #dump (i,j, fixed, notFixed, overlap.len)
                     if overlap.card >= 66:
@@ -1287,9 +1290,7 @@ solution(19):
                         if top.val >= 66:
                             fix(j, top.key)
                             break step
-                        else:
-                            discard
-                            #dump transforms
+                    tried.incl (i,j)
     var beacons: HashSet[Point3]
     for s in scanners:
         for p in s:
