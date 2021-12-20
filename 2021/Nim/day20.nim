@@ -1,34 +1,32 @@
 include aoc
 
 day 20:
-    #echo input
-    var grid: HashSet[Point]
+    type InfGrid = object
+        bounds:Slice[int]
+        parity:range[0..1]
+        data: HashSet[Point]
+    func card(grid: InfGrid): int = grid.data.card
+        
     var rules: seq[bool]
     rules = lines[0].mapIt(it == '#')
-    
+    var grid = InfGrid(bounds: 0..99)
     for y,L in lines[2..^1]:
         for x,c in L:
             if c == '#':
-                grid.incl (x,y)
-    var odd = false
+                grid.data.incl (x,y)
     
-    proc nxt(grid:HashSet[Point]):HashSet[Point] =
-        let pSeq = grid.toSeq
-        for x in -200..300:
-            for y in -200..300:
+    proc nxt(grid: InfGrid): InfGrid =
+        result = InfGrid(bounds: grid.bounds.a-1..grid.bounds.b+1, parity: 1-grid.parity)
+        for x in result.bounds:
+            for y in result.bounds:
                 var i = 0
                 for X,Y in neighbours((x,y), directions9):
-                    i = i*2 + int((X,Y) in grid)
+                    if X in grid.bounds and Y in grid.bounds:
+                        i = i*2 + int((X,Y) in grid.data)
+                    else:
+                        i = i*2 + grid.parity
                 if rules[i]:
-                    result.incl (x,y)
+                    result.data.incl (x,y)
             
-    part 1,int:
-        var grid2 = (nxt^2)(grid)
-        for x in -25..125:
-            for y in -25..125:
-                result += int((x,y) in grid2)
-    part 2,int:
-        var grid2 = (nxt^50)(grid)
-        for x in -60..160:
-            for y in -60..160:
-                result += int((x,y) in grid2)
+    part 1: card (nxt^2) grid
+    part 2: card (nxt^50) grid
