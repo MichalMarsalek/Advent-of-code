@@ -1660,28 +1660,38 @@ solution(21):
                     result.n[t] += dp[t][p][s]
                 result.w[t] += dp[t][p][21]
     
-    proc fast_p2_dp(s_pos: int): tuple[w,n: array[11,int]] = 
+    proc fast_p2_dp(s_pos: int, high_t:int): tuple[w,n: array[11,int]] =
         const rolls = {3: 1, 4: 3, 5: 6, 6: 7, 7: 6, 8: 3, 9: 1}
-        type DPTable = array[11*20*22, int]
+        type DPTable = array[11*10*22, int]
         var dp: DPTable
         dp[s_pos * 22] = 1
-        for t in 0..9:
+        var key = 0
+        for t in 0..<high_t:
             for p in 0..9:
-                for s in 0..20:
-                    let key = (t*20+p)*22 + s
+                for s in 0..11:
+                    for (v,w) in rolls:
+                        let np = (p+v) mod 10
+                        let nv = s+np+1
+                        dp[((t+1)*10+np)*22 + nv] += w*dp[key]
+                    inc key
+                for s in 12..20:
                     for (v,w) in rolls:
                         let np = (p+v) mod 10
                         let nv = (s+np+1).min(21)
-                        dp[((t+1)*20+np)*22 + nv] += w*dp[key]
-        for t in 0..10:
+                        dp[((t+1)*10+np)*22 + nv] += w*dp[key]
+                    inc key
+                inc key
+        key = 0
+        for t in 0..high_t:
             for p in 0..9:
-                let key = (t*20+p)*22
                 for s in 0..20:
-                    result.n[t] += dp[key+s]
-                result.w[t] += dp[key+21]
-
-    let pl1 = fast_p2_dp(pos1s-1)
-    let pl2 = fast_p2_dp(pos2s-1)     
+                    result.n[t] += dp[key]
+                    inc key
+                result.w[t] += dp[key]
+                inc key
+    
+    let pl1 = fast_p2_dp(pos1s-1,10)
+    let pl2 = fast_p2_dp(pos2s-1,9)     
     var ww1, ww2=0
     for t in 1..10:
         ww1+=pl1.w[t]*pl2.n[t-1]
