@@ -1,8 +1,8 @@
 include prelude
 import times, strscans, math, intsets, algorithm, stats, sugar, bitops, memo
 
-const days = 1..21
-const repetitions = 100
+const days = 21..21
+const repetitions = 10000
 var SOLUTIONS: array[26,proc (input:string):(string,string)]
 var INPUTS: array[26,string]
 var OUTPUTS: array[26,(string,string)]
@@ -1597,8 +1597,8 @@ solution(21):
     memo.fill((-1,-1))
     func countWins(p1, p2, s1, s2: int): (int,int) =
         const rolls = {3: 1, 4: 3, 5: 6, 6: 7, 7: 6, 8: 3, 9: 1}
-        if s1 >= 21 or s2 >= 21:
-            return (int(s1>=21), int(s2>=21))
+        if s1 >= 21: return (1,0)
+        if s2 >= 21: return (0,1)
         let key = ((p1*10 + p2)*21 + s1)*21 + s2
         if memo[key][0] > -1:
             return memo[key]
@@ -1610,6 +1610,84 @@ solution(21):
         memo[key] = result
         
     p2 = countWins(pos1s-1, pos2s-1, 0, 0)[0]
+
+solution(21):
+    let pos1s = input[28].ord - 48
+    let pos2s = input[58].ord - 48
+    var pos1 = pos1s
+    var pos2 = pos2s
+    var score1, score2, i = 0
+    proc genRolls():seq[int] =
+        result.add -1
+        var countRolls:int = 0
+        for _ in 1..500:
+            var roll = -1
+            for _ in 1..3:
+                inc countRolls
+                roll += (countRolls + 99) mod 100 + 1
+            result.add roll
+    const rolls = genRolls()
+    
+    while true:
+        inc i
+        pos1 = (pos1 + rolls[i]) mod 10 + 1
+        score1 += pos1
+        if score1 >= 1000:
+            p1 = score2 * i * 3
+            break
+        inc i
+        pos2 = (pos2 + rolls[i]) mod 10 + 1
+        score2 += pos2
+        if score2 >= 1000:
+            p1 = score1 * i * 3
+            break
+    
+    proc fast_p2_dp0(s_pos: int): tuple[w,n: array[11,int]] = 
+        const rolls = {3: 1, 4: 3, 5: 6, 6: 7, 7: 6, 8: 3, 9: 1}
+        type DPTable = array[11,array[10, array[22, int]]]
+        var dp: DPTable
+        dp[0][s_pos][0] = 1
+        for t in 1..10:
+            for p in 0..9:
+                for s in 0..20:
+                    for (v,w) in rolls:
+                        let np = (p+v) mod 10
+                        let nv = (s+np+1).min(21)
+                        dp[t][np][nv] += w*dp[t-1][p][s]
+        for t in 0..10:
+            for p in 0..9:
+                for s in 0..20:
+                    result.n[t] += dp[t][p][s]
+                result.w[t] += dp[t][p][21]
+    
+    proc fast_p2_dp(s_pos: int): tuple[w,n: array[11,int]] = 
+        const rolls = {3: 1, 4: 3, 5: 6, 6: 7, 7: 6, 8: 3, 9: 1}
+        type DPTable = array[11*20*22, int]
+        var dp: DPTable
+        dp[s_pos * 22] = 1
+        for t in 0..9:
+            for p in 0..9:
+                for s in 0..20:
+                    let key = (t*20+p)*22 + s
+                    for (v,w) in rolls:
+                        let np = (p+v) mod 10
+                        let nv = (s+np+1).min(21)
+                        dp[((t+1)*20+np)*22 + nv] += w*dp[key]
+        for t in 0..10:
+            for p in 0..9:
+                let key = (t*20+p)*22
+                for s in 0..20:
+                    result.n[t] += dp[key+s]
+                result.w[t] += dp[key+21]
+
+    let pl1 = fast_p2_dp(pos1s-1)
+    let pl2 = fast_p2_dp(pos2s-1)     
+    var ww1, ww2=0
+    for t in 1..10:
+        ww1+=pl1.w[t]*pl2.n[t-1]
+        ww2+=pl2.w[t-1]*pl1.n[t-1]
+
+    p2 = max(ww1, ww2)
 
 var total_time = 0.0
 for day in days:
