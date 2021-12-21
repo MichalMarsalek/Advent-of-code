@@ -5,8 +5,7 @@ day 21:
     part 1,int:
         var positions = [ints[1],ints[3]]
         var scores = [0,0]
-        var turn = 0
-        var countRolls = 0
+        var turn, countRolls = 0
         proc roll(rep=1):int =
             for _ in 1..rep:
                 inc countRolls
