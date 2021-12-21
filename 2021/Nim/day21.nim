@@ -2,7 +2,7 @@ include aoc
 import memo
 
 day 21:
-    part 1,int:
+    part 1:
         var positions = [ints[1],ints[3]]
         var scores = [0,0]
         var turn, countRolls = 0
