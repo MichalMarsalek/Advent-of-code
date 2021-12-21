@@ -6,36 +6,26 @@ day 21:
         var positions = [ints[1],ints[3]]
         var scores = [0,0]
         var turn = 0
-        var dice = 100
         var countRolls = 0
-        proc roll(rep:int):int =
+        proc roll(rep=1):int =
             for _ in 1..rep:
-                if dice == 100:
-                    dice = 0
-                inc dice
                 inc countRolls
-                result += dice
+                result += (countRolls - 1) mod 100 + 1
         while true:
-            positions[turn] = (positions[turn] + roll(3) + 9) mod 10 + 1
+            positions[turn] = (positions[turn] + roll(3) - 1) mod 10 + 1
             scores[turn] += positions[turn]
             if scores[turn] >= 1000:
                 return scores[1-turn] * countRolls
             turn = 1 - turn
     part 2:
-        var positions = [ints[1],ints[3]]
-        var rolls: seq[int]
-        for a in [1,2,3]:
-            for b in [1,2,3]:
-                for c in [1,2,3]:
-                    rolls.add a+b+c
-        func countWins(pos, score: array[2,int], turn:int): int {.memoized.} =
-            if turn == 0 and score[1] >= 21: return 0
-            if turn == 1 and score[0] >= 21: return 1
+        let rolls = product([@[1,2,3],@[1,2,3],@[1,2,3]]).mapIt it.sum
+        func countWins(p1, p2, s1, s2: int): array[2, int] {.memoized.} =
+            if s1 >= 21 or s2 >= 21:
+                return [int(s1>=21), int(s2>=21)]
             for roll in rolls:
-                var pos2 = pos
-                var score2 = score
-                pos2[turn] = (pos[turn] + roll - 1) mod 10 + 1
-                score2[turn] += pos2[turn]
-                result += countWins(pos2, score2, 1-turn)
+                let p = (p1 + roll - 1) mod 10 + 1
+                let w = countWins(p2, p, s2, s1 + p)
+                result[0] += w[1]
+                result[1] += w[0]
         
-        countWins([ints[1], ints[3]], [0, 0], 0)
+        max countWins(ints[1], ints[3], 0, 0)
