@@ -1666,19 +1666,19 @@ solution(21):
         var dp: DPTable
         dp[s_pos * 22] = 1
         var key = 0
-        for t in 0..<high_t:
+        for t in 1..high_t:
             for p in 0..9:
                 for s in 0..11:
                     for (v,w) in rolls:
                         let np = (p+v) mod 10
                         let nv = s+np+1
-                        dp[((t+1)*10+np)*22 + nv] += w*dp[key]
+                        dp[(t*10+np)*22 + nv] += w*dp[key]
                     inc key
                 for s in 12..20:
                     for (v,w) in rolls:
                         let np = (p+v) mod 10
                         let nv = (s+np+1).min(21)
-                        dp[((t+1)*10+np)*22 + nv] += w*dp[key]
+                        dp[(t*10+np)*22 + nv] += w*dp[key]
                     inc key
                 inc key
         key = 0
