@@ -1,7 +1,7 @@
 include prelude
 import times, strscans, math, intsets, algorithm, stats, sugar, bitops, memo
 
-const days = 18..18
+const days = 1..21
 const repetitions = 100
 var SOLUTIONS: array[26,proc (input:string):(string,string)]
 var INPUTS: array[26,string]
@@ -1561,6 +1561,55 @@ solution(20):
     for _ in 1..24:
         update()
     p2 = count()
+
+solution(21):
+    let pos1s = input[28].ord - 48
+    let pos2s = input[58].ord - 48
+    var pos1 = pos1s
+    var pos2 = pos2s
+    var score1, score2, i = 0
+    proc genRolls():seq[int] =
+        result.add -1
+        var countRolls:int = 0
+        for _ in 1..500:
+            var roll = -1
+            for _ in 1..3:
+                inc countRolls
+                roll += (countRolls + 99) mod 100 + 1
+            result.add roll
+    const rolls = genRolls()
+    
+    while true:
+        inc i
+        pos1 = (pos1 + rolls[i]) mod 10 + 1
+        score1 += pos1
+        if score1 >= 1000:
+            p1 = score2 * i * 3
+            break
+        inc i
+        pos2 = (pos2 + rolls[i]) mod 10 + 1
+        score2 += pos2
+        if score2 >= 1000:
+            p1 = score1 * i * 3
+            break
+    
+    var memo: array[21*21*10*10, (int,int)]
+    memo.fill((-1,-1))
+    func countWins(p1, p2, s1, s2: int): (int,int) =
+        const rolls = {3: 1, 4: 3, 5: 6, 6: 7, 7: 6, 8: 3, 9: 1}
+        if s1 >= 21 or s2 >= 21:
+            return (int(s1>=21), int(s2>=21))
+        let key = ((p1*10 + p2)*21 + s1)*21 + s2
+        if memo[key][0] > -1:
+            return memo[key]
+        for (roll,freq) in rolls:
+            let p = (p1 + roll) mod 10
+            let w = countWins(p2, p, s2, s1 + p + 1)
+            result[0] += freq*w[1]
+            result[1] += freq*w[0]
+        memo[key] = result
+        
+    p2 = countWins(pos1s-1, pos2s-1, 0, 0)[0]
 
 var total_time = 0.0
 for day in days:
