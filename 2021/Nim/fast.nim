@@ -1,8 +1,8 @@
 include prelude
 import times, strscans, math, intsets, algorithm, stats, sugar, bitops, memo
 
-const days = 21..21
-const repetitions = 10000
+const days = 22..22
+const repetitions = 1
 var SOLUTIONS: array[26,proc (input:string):(string,string)]
 var INPUTS: array[26,string]
 var OUTPUTS: array[26,(string,string)]
@@ -1626,24 +1626,25 @@ solution(21):
                 inc countRolls
                 roll += (countRolls + 99) mod 100 + 1
             result.add roll
-    const rolls = genRolls()
+    const rolls1 = genRolls()
     
     while true:
         inc i
-        pos1 = (pos1 + rolls[i]) mod 10 + 1
+        pos1 = (pos1 + rolls1[i]) mod 10 + 1
         score1 += pos1
         if score1 >= 1000:
             p1 = score2 * i * 3
             break
         inc i
-        pos2 = (pos2 + rolls[i]) mod 10 + 1
+        pos2 = (pos2 + rolls1[i]) mod 10 + 1
         score2 += pos2
         if score2 >= 1000:
             p1 = score1 * i * 3
             break
     
+    const rolls = {3: 1, 4: 3, 5: 6, 6: 7, 7: 6, 8: 3, 9: 1}
+    
     proc fast_p2_dp0(s_pos: int): tuple[w,n: array[11,int]] = 
-        const rolls = {3: 1, 4: 3, 5: 6, 6: 7, 7: 6, 8: 3, 9: 1}
         type DPTable = array[11,array[10, array[22, int]]]
         var dp: DPTable
         dp[0][s_pos][0] = 1
@@ -1660,35 +1661,39 @@ solution(21):
                     result.n[t] += dp[t][p][s]
                 result.w[t] += dp[t][p][21]
     
+    
     proc fast_p2_dp(s_pos: int, high_t:int): tuple[w,n: array[11,int]] =
-        const rolls = {3: 1, 4: 3, 5: 6, 6: 7, 7: 6, 8: 3, 9: 1}
-        type DPTable = array[11*10*22, int]
-        var dp: DPTable
+        var dp: array[2*10*22, int]
         dp[s_pos * 22] = 1
         var key = 0
-        for t in 1..high_t:
+        for tt in 0..<high_t:
+            let t = tt mod 2
+            for i in (1-t)*10*22..<(2 - t)*10*22:
+                dp[i] = 0
             for p in 0..9:
                 for s in 0..11:
                     for (v,w) in rolls:
                         let np = (p+v) mod 10
                         let nv = s+np+1
-                        dp[(t*10+np)*22 + nv] += w*dp[key]
+                        dp[((1-t)*10+np)*22 + nv] += w*dp[key]
+                    result.n[tt] += dp[key]
                     inc key
                 for s in 12..20:
                     for (v,w) in rolls:
                         let np = (p+v) mod 10
                         let nv = (s+np+1).min(21)
-                        dp[(t*10+np)*22 + nv] += w*dp[key]
+                        dp[((1-t)*10+np)*22 + nv] += w*dp[key]
+                    result.n[tt] += dp[key]
                     inc key
+                result.w[tt] += dp[key]
                 inc key
-        key = 0
-        for t in 0..high_t:
-            for p in 0..9:
-                for s in 0..20:
-                    result.n[t] += dp[key]
-                    inc key
-                result.w[t] += dp[key]
+            key = key mod (2*10*22)
+        for p in 0..9:
+            for s in 0..20:
+                result.n[high_t] += dp[key]
                 inc key
+            result.w[high_t] += dp[key]
+            inc key
     
     let pl1 = fast_p2_dp(pos1s-1,10)
     let pl2 = fast_p2_dp(pos2s-1,9)     
@@ -1698,6 +1703,41 @@ solution(21):
         ww2+=pl2.w[t-1]*pl1.n[t-1]
 
     p2 = max(ww1, ww2)
+
+import rectangles
+solution(22):
+    var points = initRectangleUnion[3]()
+    var i = 2
+    template scanNumber(skip=0):int =
+        var n = 0
+        if input[i] == '-':
+            inc i
+            while input[i] in Digits:
+                n = n*10 - input[i].ord + 48
+                i += 1
+        else:
+            while input[i] in Digits:
+                n = n*10 + input[i].ord - 48
+                i += 1
+        i += skip
+        n
+    while i < input.len:
+        var on = input[i] == ' '
+        if on: i+=3
+        else: i+=4
+        var x0 = scanNumber(2)
+        var x1 = scanNumber(3)
+        var y0 = scanNumber(2)
+        var y1 = scanNumber(3)
+        var z0 = scanNumber(2)
+        var z1 = scanNumber(3)
+        if on:
+            points += [x0,y0,z0]^>[x1,y1,z1]
+        else:
+            points -= [x0,y0,z0]^>[x1,y1,z1]
+    
+    p1 = card points * [-50,-50,-50]^>[50,50,50]
+    p2 = card points
 
 var total_time = 0.0
 for day in days:
