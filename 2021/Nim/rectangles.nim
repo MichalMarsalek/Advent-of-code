@@ -24,7 +24,7 @@ func nonzero[N](r: Rectangle[N]): bool =
             return false
     return true
 
-func contains[N](r:Rectangle[N], vert:Point[N]): bool =
+func contains*[N](r:Rectangle[N], vert:Point[N]): bool =
     for i in 0..N.high:
         if vert[i] < r.low[i] or vert[i] > r.high[i]:
             return false
