@@ -21,5 +21,5 @@ day 24:
             else:
                 ranges[j] = 1..9-diff
                 ranges[i] = 1+diff..9    
-    part 1: ranges.mapIt(it.b).join                    
-    part 2: ranges.mapIt(it.a).join    
+    part 1: ranges.mapIt(it.b).join
+    part 2: ranges.mapIt(it.a).join

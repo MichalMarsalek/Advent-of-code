@@ -1,8 +1,8 @@
 include prelude
 import times, strscans, math, intsets, algorithm, stats, sugar, bitops, memo
 
-const days = 22..22
-const repetitions = 1
+const days = 24..24
+const repetitions = 10000
 var SOLUTIONS: array[26,proc (input:string):(string,string)]
 var INPUTS: array[26,string]
 var OUTPUTS: array[26,(string,string)]
@@ -1738,6 +1738,47 @@ solution(22):
     
     p1 = card points * [-50,-50,-50]^>[50,50,50]
     p2 = card points
+
+solution(24):
+    var ins: array[14, array[3,int]]
+    var j = 0
+    var i = 37
+    template scanNumber(skip=0):int =
+        var n = 0
+        if input[i] == '-':
+            inc i
+            while input[i] in Digits:
+                n = n*10 - input[i].ord + 48
+                i += 1
+        else:
+            while input[i] in Digits:
+                n = n*10 + input[i].ord - 48
+                i += 1
+        i += skip
+        n
+        
+    while i < input.len:
+        ins[j][0] = scanNumber(7)
+        ins[j][1] = scanNumber(80)
+        ins[j][2] = scanNumber(54)
+        inc j
+    
+    var ranges: array[14, Slice[int]]
+    var stack: seq[int]
+    for i,A in ins:
+        if A[0] == 1:
+            stack.add i
+        else:
+            var j = stack.pop
+            var B = ins[j]
+            var diff = B[2]+A[1]
+            if diff < 0:
+                ranges[j] = 1-diff..9
+                ranges[i] = 1..9+diff
+            else:
+                ranges[j] = 1..9-diff
+                ranges[i] = 1+diff..9    
+    return (ranges.mapIt(it.b), ranges.mapIt(it.a))
 
 var total_time = 0.0
 for day in days:
