@@ -53,14 +53,19 @@ proc initGrid*[T](width, height: int):Grid[T] =
     result = newSeq[seq[T]](height)
     for y in 0..<height:
         result[y] = newSeq[T](width)
+proc initGrid*[T](width, height: int, value: T):Grid[T] =
+    result = newSeq[seq[T]](height)
+    for y in 0..<height:
+        result[y] = toSeq value.repeat width
+        
 
 template `[]`*[T](data:Grid[T], index:Point):T =
     data[index.y][index.x]
 template `[]`*[T](data:Grid[T], x,y:int):T =
     data[y][x]
-proc `[]=`*[T](data: var Grid[T], index: Point, val: int) =
+template `[]=`*[T](data: var Grid[T], index: Point, val: T) =
     data[index.y][index.x] = val
-proc `[]=`*[T](data: var Grid[T], x,y:int, val: int) =
+template `[]=`*[T](data: var Grid[T], x,y:int, val: T) =
     data[y][x] = val
 
 func size*[T](data:Grid[T]):int =
@@ -226,6 +231,11 @@ iterator coordinates*[T](data:Grid[T]):Point =
     for y in 0..<height:
         for x in 0..<width:
             yield (x,y)
+
+iterator pairs*[T](data:Grid[T]):(Point,T) =
+    ## Yields all pairs of coordinate and value.
+    for c in data.coordinates:
+        yield (c, data[c])
 
 func continuousAreas*[T](data:Grid[T], pred: proc (a,b:T):bool,
                          directions:openarray[Point]=directions4): seq[HashSet[Point]] =
