@@ -41,6 +41,33 @@ day 23:
     
     func countCorrect(state:State,i:int):int =
         card({i.goalX:2, i.goalX:3, i.goalX:4, i.goalX:5}.toHashSet * state[i].toHashSet)
+    func countCorrect2(state:State,i:int):int =
+        let x = i.goalX
+        for y in countdown(5,2):
+            if (x,y) in state[i]:
+                inc result
+            else:
+                return
+    
+    func penalty(v:State): int =
+        for i,group in v:
+            var pl = 0
+            for j,p in group:
+                if p.x != i.goalX:
+                    result += (abs(p.x - i.goalX) + p.y - 1) * i.cost
+                    #debugecho ("shift+up", i,p, (abs(p.x - i.goalX) + p.y - 1) * i.cost)
+                    result += (4-v.countCorrect2(i)-pl) * i.cost
+                    #debugecho ("down    ", i,p, (4-v.countCorrect2(i)-pl) * i.cost)
+                    inc pl                        
+                elif 6-v.countCorrect2(i) > p.y:
+                    result += (p.y+7-pl) * i.cost
+                    inc pl
+                    discard
+                    #debugecho ("up+down ", i,p, (p.y+7-pl) * i.cost)
+                #debugecho ""
+                    
+            
+    
     func countAll(state:State,x:int):int =
         for group in state:
             for amp in group:
@@ -122,15 +149,23 @@ day 23:
         var dist = {initialState: 0}.toTable
         var seen = [initialState].toHashSet
         var q = {0:initialState}.toHeapQueue
+        var steps = 0
         while true:
-            let v = q.pop[1]
-            if v.isWin: return dist[v]
+            inc steps
+            let vv = q.pop
+            let v = vv[1]
+            #dump (vv[0], dist[v])
+            if v.isWin:
+                dump steps
+                return dist[v]
             seen.incl v
             for price,u in neighbours(v):
                 if u notin seen:
                     let newCost = dist[v] + price
                     if newCost < dist.getOrDefault(u, 2^60):                
                         dist[u] = newCost
-                        q.push (dist[u], u)
+                        q.push (dist[u] + u.penalty, u)
+    echo penalty input.getState 1
+    echo penalty input.getState 2
     part 1: solve input.getState 1
     part 2: solve input.getState 2
