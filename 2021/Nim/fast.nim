@@ -1,7 +1,7 @@
 include prelude
 import times, strscans, math, intsets, algorithm, stats, sugar, bitops, memo, heapqueue
 
-const days = 25..25
+const days = 1..25
 const repetitions = 1000
 var SOLUTIONS: array[26,proc (input:string):(string,string)]
 var INPUTS: array[26,string]
@@ -2032,8 +2032,13 @@ solution(25):
                 rows[y].down[2] = rows[y].down[2] xor pos
             pos = pos shl 1
     
+    #echo rows[1].right
+    #echo rows[1].right.rot
+    #echo rows[1].right.rotBack
+    #for i in 0..100:
+    #    assert rows[i].right.rot.rotBack == rows[i].right
+    #    assert rows[i].right.rotBack.rot == rows[i].right
     
-    #updates
     var moved = true
     
     proc updateRight() =
