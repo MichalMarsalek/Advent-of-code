@@ -1,7 +1,7 @@
 include prelude
 import times, strscans, math, intsets, algorithm, stats, sugar, bitops, memo, heapqueue
 
-const days = 1..24
+const days = 25..25
 const repetitions = 100
 var SOLUTIONS: array[26,proc (input:string):(string,string)]
 var INPUTS: array[26,string]
@@ -1924,6 +1924,53 @@ solution(24):
                 ranges[j] = 1..9-diff
                 ranges[i] = 1+diff..9    
     return (ranges.mapIt(it.b).join, ranges.mapIt(it.a).join)
+
+solution(25):
+    #var grid = input
+    var grid: array[140*137,char]
+    for i in 0..<140*137:
+        grid[i] = input[i]
+    var moved = true
+    proc updateRight() =
+        var i = 0
+        for y in 0..136:
+            var leftMost = grid[i]
+            var prevMoved = false
+            for x in 0..137:
+                if not prevMoved and grid[i] == '>' and grid[i+1] == '.':
+                    grid[i+1] = '>'
+                    grid[i] = '.'
+                    moved = true
+                    prevMoved = true
+                else: prevMoved = false
+                inc i
+            if not prevMoved and grid[i] == '>' and leftMost == '.':
+                grid[i-138] = '>'
+                grid[i] = '.'
+                moved = true
+            i += 2
+    proc updateDown() =
+        for x in 0..138:
+            var i = x
+            var topMost = grid[i]
+            var prevMoved = false
+            for y in 0..135:
+                if not prevMoved and grid[i] == 'v' and grid[i+140] == '.':
+                    grid[i+140] = 'v'
+                    grid[i] = '.'
+                    moved = true
+                    prevMoved = true
+                else: prevMoved = false
+                i += 140
+            if not prevMoved and grid[i] == 'v' and topMost == '.':
+                grid[x] = 'v'
+                grid[i] = '.'
+                moved = true
+    while moved:
+        inc p1
+        moved = false
+        updateRight()
+        updateDown()
 
 var total_time = 0.0
 for day in days:
