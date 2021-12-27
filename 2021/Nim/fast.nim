@@ -2032,10 +2032,8 @@ solution(25):
                 rows[y].down[2] = rows[y].down[2] xor pos
             pos = pos shl 1
     
-    for i in 0..100:
-        assert rows[1].right.rot.rotBack == rows[1].right
-        assert rows[1].right.rotBack.rot == rows[1].right
     
+    #updates
     var moved = true
     
     proc updateRight() =
