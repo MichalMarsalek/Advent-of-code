@@ -37,14 +37,16 @@ template leftRoom(hall_i:int):int = hall_i - 2
 template rightRoom(hall_i:int):int = hall_i - 1
 template leftHall(room_i:int):int = room_i + 1
 template rightHall(room_i:int):int = room_i + 2
+const countUpdate = [(5^0) shl 53,(5^1) shl 53,(5^2) shl 53,(5^3) shl 53,(5^4) shl 53]
+const costArray = [1,10,100,1000]
 template moveFromRoomToHall(state: var State, room_i, hall_i:int) {.dirty.} =
-    state -= (5^room_i) shl 53 # decrease target count
+    state -= countUpdate[room_i] # decrease target count
     state = state xor (rooms[room_i][counts[room_i]-1] xor hall[hall_i]) shl (3*hall_i) # set hall to the value
 template moveFromHallToRoom(state: var State, hall_i, room_i:int) {.dirty.} =
-    state += (5^room_i) shl 53 # increase target count
+    state += countUpdate[room_i] # increase target count
     state = state xor (5 xor hall[hall_i]) shl (3*hall_i) # set hall to 5
     state = state xor ((rooms[room_i][counts[room_i]] xor hall[hall_i]) shl (21 + room_i * 8 + 2*counts[room_i])) # set room to the value
-template cost(i:int):int = 10^i
+template cost(i:int):int = costArray[i]
 
 
 proc debugState(s:State) =
@@ -104,13 +106,13 @@ iterator neighbours(state:State): (int,State) =
                     if allIt(i+1..hall[i].leftHall, hall[it] == 5):
                         var copy = state
                         copy.moveFromHallToRoom(i, hall[i])
-                        yield ((2* hall[i] + 3 - hallX[i] + 4 - counts[hall[i]])*hall[i].cost,copy)
+                        yield ((2* hall[i] + 7 - hallX[i] - counts[hall[i]])*hall[i].cost,copy)
                         break gen
                 else:      #if it needs to go to the left
                     if allIt(hall[i].rightHall..i-1, hall[it] == 5):
                         var copy = state
                         copy.moveFromHallToRoom(i, hall[i])
-                        yield ((hallX[i] - (2* hall[i] + 3) + 4 - counts[hall[i]])*hall[i].cost,copy)
+                        yield ((hallX[i] - (2* hall[i]) + 1 - counts[hall[i]])*hall[i].cost,copy)
                         break gen
         
         for i in 0..3: #moves from room to hall
@@ -120,13 +122,13 @@ iterator neighbours(state:State): (int,State) =
                 while target >= 0 and hall[target] == 5: # moving left
                     var copy = state
                     copy.moveFromRoomToHall(i, target)
-                    yield ((2 * i + 3 - hallX[target] + 5 - counts[i])*val.cost,copy)
+                    yield ((2 * i + 8 - hallX[target] - counts[i])*val.cost,copy)
                     dec target
                 target = i.rightHall
                 while target < 7 and hall[target] == 5: # moving right
                     var copy = state
                     copy.moveFromRoomToHall(i, target)
-                    yield ((hallX[target] - (2 * i + 3) + 5 - counts[i])*val.cost,copy)
+                    yield ((hallX[target] - (2 * i) + 2 - counts[i])*val.cost,copy)
                     inc target
 
 func penalty(s:State):int =
@@ -168,7 +170,7 @@ proc solve(initialState:State):int =
                     q.push (dist[u]+u.penalty, u)
 
 let input = readFile "inputs\\day23.in"
-let timeStart = cpuTime()
+let timeStart = getTime()
 let start1 = input.getState 1
 #debugState start1
 #dump start1.penalty
@@ -177,4 +179,4 @@ let start2 = input.getState 2
 #debugState start1
 dump solve start1
 dump solve start2
-dump cpuTime()-timeStart
+dump getTime()-timeStart

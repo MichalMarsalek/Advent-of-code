@@ -70,7 +70,7 @@ Output for day 13 part 2 is the ASCII art letters.
 | 11              	| 0.113 ms       	|
 | 12              	| 0.174 ms       	|
 | 13              	| 0.215 ms       	|
-| 14              	| 1.326 ms (unoptimized yet)    	|
+| 14              	| 1.326 ms       	|
 | 15              	| 11.698 ms      	|
 | 16              	| 0.017 ms      	|
 | 17              	| 0.049 ms      	|
@@ -79,7 +79,7 @@ Output for day 13 part 2 is the ASCII art letters.
 | 20              	| 3.431 ms      	|
 | 21              	| 0.024 ms      	|
 | 22              	| 4.987 ms      	|
-| 23              	| -              	|
+| 23              	| 25.507 ms (this is an average over 3 different inputs)            	|
 | 24              	| 0.030 ms      	|
 
 Intel(R) Core(TM) i5-7200U CPU @ 2.50GHz   2.70 GHz
