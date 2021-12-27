@@ -19,7 +19,7 @@ include aoc
 
 day 1:
     proc solve(offset:int):int =
-        zip(ints, ints[offset..^1])countIt it[1]>it[0]
+        zip(ints, ints[offset..^1]).countIt it[1]>it[0]
     part 1: solve 1
     part 2: solve 3
 ```
