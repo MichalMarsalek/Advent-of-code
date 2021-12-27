@@ -2,7 +2,7 @@ include prelude
 import times, strscans, math, intsets, algorithm, stats, sugar, bitops, memo, heapqueue
 
 const days = 25..25
-const repetitions = 100
+const repetitions = 1000
 var SOLUTIONS: array[26,proc (input:string):(string,string)]
 var INPUTS: array[26,string]
 var OUTPUTS: array[26,(string,string)]
@@ -1971,6 +1971,101 @@ solution(25):
         moved = false
         updateRight()
         updateDown()
+
+solution(25):
+    type BitArray = array[3,int]
+    type Row = tuple[right, down: BitArray]
+    
+    func `$`(r:Row):string =
+        result = '.'.repeat 139
+        for i in 0..2:
+            for x in 0..63:
+                if ((r.right[i] shr x) and 1) == 1:
+                    result[i*64 + x] = '>'
+                if ((r.down[i] shr x) and 1) == 1:
+                    result[i*64 + x] = 'v'
+    func `$`(r:BitArray):string =
+        r[0].toBin(64).reversed.join & '|' & r[1].toBin(64).reversed.join & '|' & r[2].toBin(11).reversed.join
+    
+    template rot(x:BitArray):BitArray =
+        [(x[2] shr 10 and 1) xor (x[0] shl 1),
+         (x[0] shr 63 and 1) xor (x[1] shl 1),
+         (x[1] shr 63 and 1) xor ((x[2] shl 1) and 0b11111111111)]
+    template rotBack(x:BitArray):BitArray =
+        [(x[1] shl 63) xor ((x[0] shr 1) and 0x7fffffffffffffff.int),
+         (x[2] shl 63) xor ((x[1] shr 1) and 0x7fffffffffffffff.int),
+         ((x[0] and 1) shl 10) xor ((x[2] shr 1) and 0x7fffffffffffffff.int)]
+    template `or`(x: BitArray, y: BitArray):BitArray =
+        [x[0] or y[0], x[1] or y[1], x[2] or y[2]]
+    template `not`(x: BitArray):BitArray =
+        [not x[0], not x[1], not x[2]]
+    template `xor`(x: BitArray, y: BitArray):BitArray =
+        [x[0] xor y[0], x[1] xor y[1], x[2] xor y[2]]
+    template `and`(x: BitArray, y: BitArray):BitArray =
+        [x[0] and y[0], x[1] and y[1], x[2] and y[2]]
+    template isEmpty(x:BitArray):bool =
+        x[0] == 0 and x[1] == 0 and x[2] == 0
+    
+    
+    #parsing
+    var rows: array[137, Row]
+    for y in 0..136:
+        var pos = 1
+        for x in 0..63:
+            if input[x+y*140] == '>':
+                rows[y].right[0] = rows[y].right[0] xor pos
+            elif input[x+y*140] == 'v':
+                rows[y].down[0] = rows[y].down[0] xor pos
+            pos = pos shl 1
+        pos = 1
+        for x in 64..127:
+            if input[x+y*140] == '>':
+                rows[y].right[1] = rows[y].right[1] xor pos
+            elif input[x+y*140] == 'v':
+                rows[y].down[1] = rows[y].down[1] xor pos
+            pos = pos shl 1
+        pos = 1
+        for x in 128..138:
+            if input[x+y*140] == '>':
+                rows[y].right[2] = rows[y].right[2] xor pos
+            elif input[x+y*140] == 'v':
+                rows[y].down[2] = rows[y].down[2] xor pos
+            pos = pos shl 1
+    
+    for i in 0..100:
+        assert rows[1].right.rot.rotBack == rows[1].right
+        assert rows[1].right.rotBack.rot == rows[1].right
+    
+    var moved = true
+    
+    proc updateRight() =
+        for y in 0..136:
+            let toMove = rows[y].right.rot and (not (rows[y].right or rows[y].down))
+            if not toMove.isEmpty:
+                rows[y].right = rows[y].right xor toMove xor toMove.rotBack
+                moved = true
+    proc updateDown() =
+        var firstRow = rows[0]
+        var toMove: BitArray
+        for y in 0..135:
+            toMove = rows[y].down and (not (toMove or rows[y+1].right or rows[y+1].down))
+            if not toMove.isEmpty:
+                rows[y].down = rows[y].down xor toMove
+                rows[y+1].down = rows[y+1].down xor toMove
+                moved = true
+        toMove = rows[136].down and (not (toMove or firstRow.right or firstRow.down))
+        if not toMove.isEmpty:
+            rows[136].down = rows[136].down xor toMove
+            rows[0].down = rows[0].down xor toMove
+            moved = true
+    
+    while moved:
+        inc p1
+        moved = false
+        updateRight()
+        updateDown()
+            
+        
 
 var total_time = 0.0
 for day in days:
