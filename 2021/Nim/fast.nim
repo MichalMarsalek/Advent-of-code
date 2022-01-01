@@ -1897,8 +1897,6 @@ solution(23):
         var rooms {.inject.}: array[4,array[4,int]]
         var hall {.inject.}: array[7,int]
         var ready {.inject.}: array[4,bool]
-        var leftMostOut {.inject.}: int
-        var rightMostOut {.inject.}: int
     template extractData(s:State) {.dirty.} =
         counts = unpackCounts s
         rooms = [
@@ -1913,15 +1911,6 @@ solution(23):
                      allIt(0..<counts[1], rooms[1][it] == 1),
                      allIt(0..<counts[2], rooms[2][it] == 2),
                      allIt(0..<counts[3], rooms[3][it] == 3)]
-        leftMostOut = 0
-        rightMostOut = 3
-        
-        if hall[2] == 0: rightMostOut = 0
-        elif hall[3] <= 1: rightMostOut = 1
-        elif hall[4] <= 2: rightMostOut = 2
-        if hall[4] == 3: leftMostOut = 3
-        elif hall[3] in [2,3]: leftMostOut = 2
-        elif hall[2] in [1,2,3]: leftMostOut = 1
     const hallX = [1,2,4,6,8,10,11]
     const roomAlignment = [4+3+2+1,3+2+1,2+1,1,0]
     const winState = 5629487760098646893
@@ -1967,7 +1956,6 @@ solution(23):
         block gen:
             for i in 0..6: #moves from hall to room
                 if hall[i] != 5 and ready[hall[i]]: #if the hall slot is not empty and the target is ready
-                    #if leftMostOut <= hall[i] and hall[i] <= rightMostOut:
                         if hall[i] >= i.rightRoom:      #if it needs to go to the right
                             if allIt(i+1..hall[i].leftHall, hall[it] == 5):
                                 var copy = state
@@ -1980,6 +1968,14 @@ solution(23):
                                 copy.moveFromHallToRoom(i, hall[i])
                                 yield ((hallX[i] - (2* hall[i]) + 1 - counts[hall[i]])*hall[i].cost,copy)
                                 break gen
+            var leftMostOut = 0
+            var rightMostOut = 3        
+            if hall[2] == 0: rightMostOut = 0
+            elif hall[3] <= 1: rightMostOut = 1
+            elif hall[4] <= 2: rightMostOut = 2
+            if hall[4] == 3: leftMostOut = 3
+            elif hall[3] in [2,3]: leftMostOut = 2
+            elif hall[2] in [1,2,3]: leftMostOut = 1
             
             for i in leftMostOut..rightMostOut: #moves from room to hall
                 if not ready[i]:
