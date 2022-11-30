@@ -1,0 +1,18 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Run Nim",
+            "command": "nim",
+            "args": ["c", "-d:ssl", "-o:bin/${fileBasenameNoExtension}", "-r", "${fileBasename}"],
+            "options": {
+                "cwd": "${workspaceRoot}"
+            },
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        }
+    ]
+}
