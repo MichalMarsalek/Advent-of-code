@@ -7,9 +7,5 @@ day 2:
         )
     func score(a, b: int): int =
         ((b - a + 4) mod 3) * 3 + b + 1
-    part 1, int:
-        for (a, b) in rounds:
-            result += score(a, b)
-    part 2, int:
-        for (a, b) in rounds:
-            result += score(a, (a + b + 2) mod 3)
+    part 1: sum collect(for (a, b) in rounds: score(a, b))
+    part 2: sum collect(for (a, b) in rounds: score(a, (a + b + 2) mod 3))

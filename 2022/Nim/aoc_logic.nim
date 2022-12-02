@@ -272,3 +272,5 @@ func `^`*[T](fun: T -> T, exp: int): (T -> T) =
         result = inp
         for _ in 1..exp:
             result = fun result
+
+func `mod`*[T: SomeNumber](x, y: T): T = x.floorMod y
