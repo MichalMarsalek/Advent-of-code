@@ -6,4 +6,4 @@ day 3:
     func common(parts: seq[string]): char =
         parts.mapIt(it.toHashSet).foldl(a*b).toSeq[0]
     part 1: sum lines.mapIt(priority common it.distribute 2)
-    part 2: sum lines.distribute(lines.len div 3).mapIt(priority common it)
+    part 2: sum lines.groupsOf(3).mapIt(priority common it)

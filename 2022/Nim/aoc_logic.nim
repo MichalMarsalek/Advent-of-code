@@ -277,4 +277,9 @@ func `^`*[T](fun: T -> T, exp: int): (T -> T) =
 func distribute*(text: string, num: Positive, spread = true): seq[string] =
     text.toSeq.distribute(num, spread).mapIt(it.join)
 
+func groupsOf*[T](data: seq[T], groupSize: Positive): seq[seq[T]] =
+    data.distribute(data.len div groupSize)
+func groupsOf*[T](data: string, groupSize: Positive): seq[string] =
+    data.distribute(data.len div groupSize)
+
 func `mod`*[T: SomeNumber](x, y: T): T = x.floorMod y
