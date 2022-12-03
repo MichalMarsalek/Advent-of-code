@@ -9,7 +9,7 @@ template day*(day: int, solution: untyped): untyped =
         SOLUTIONS[day] = proc (input: string): Table[int, string] =
             var inputRaw{.inject.} = input
             var input {.inject.} = input.strip
-            var ints {.inject.} = input.ints
+            var integers {.inject.} = input.ints
             var lines {.inject.} = input.splitLines
             var parts {.inject.}: OrderedTable[int, proc (): string]
             solution
