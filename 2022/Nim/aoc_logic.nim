@@ -139,7 +139,8 @@ proc getInput(day: int): string =
         return readFile filename
     echo fmt"Downloading input for day {day}."
     let ctx = newContext(cafile = "cacert.pem")
-    let client = newHttpClient(sslContext = ctx)
+    let client = newHttpClient(userAgent = "https://github.com/MichalMarsalek/Advent-of-code by Michal.Marsalek4@gmail.com",
+            sslContext = ctx)
     client.headers["cookie"] = readFile "session"
     let input = client.getContent(fmt"https://adventofcode.com/2022/day/{day}/input")
     filename.writeFile(input)
