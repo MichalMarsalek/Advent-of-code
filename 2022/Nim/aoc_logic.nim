@@ -274,6 +274,10 @@ func `^`*[T](fun: T -> T, exp: int): (T -> T) =
         for _ in 1..exp:
             result = fun result
 
+func `*`*[T1, T2, T3](fun2: T2 -> T3, fun1: T1 -> T2): (T1 -> T3) =
+    return proc(inp: T1): T3 =
+        fun2 fun1 inp
+
 func distribute*(text: string, num: Positive, spread = true): seq[string] =
     text.toSeq.distribute(num, spread).mapIt(it.join)
 
