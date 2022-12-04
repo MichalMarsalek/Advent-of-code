@@ -132,6 +132,42 @@ func intGrid*(data: string): Grid[int] =
     ## Returns a matrix of ints present in the input text
     data.splitLines.map(ints)
 
+# TODO make this general
+macro mapTuple*[T1, T2](x: seq[(T1, T2)], expr: untyped): untyped =
+    quote do:
+        collect:
+            for el in `x`:
+                let (a {.inject.}, b {.inject.}) = el
+                `expr`
+
+macro mapTuple*[T1, T2, T3](x: seq[(T1, T2, T3)], expr: untyped): untyped =
+    quote do:
+        collect:
+            for el in `x`:
+                let (a {.inject.}, b {.inject.}, c {.inject.}) = el
+                `expr`
+
+macro mapTuple*[T1, T2, T3, T4](x: seq[(T1, T2, T3, T4)], expr: untyped): untyped =
+    quote do:
+        collect:
+            for el in `x`:
+                let (a {.inject.}, b {.inject.}, c {.inject.}, d {.inject.}) = el
+                `expr`
+
+macro mapTuple*[T1, T2, T3, T4, T5](x: seq[(T1, T2, T3, T4, T5)], expr: untyped): untyped =
+    quote do:
+        collect:
+            for el in `x`:
+                let (a {.inject.}, b {.inject.}, c {.inject.}, d {.inject.}, e {.inject.}) = el
+                `expr`
+
+macro mapTuple*[T1, T2, T3, T4, T5, T6](x: seq[(T1, T2, T3, T4, T5, T6)], expr: untyped): untyped =
+    quote do:
+        collect:
+            for el in `x`:
+                let (a {.inject.}, b {.inject.}, c {.inject.}, d {.inject.}, e {.inject.}, f {.inject.}) = el
+                `expr`
+
 proc getInput(day: int): string =
     ## Downloads an input for given day, saves it on disk and returns it,
     ## unless it's been downloaded before, in which case loads it from the disk.
@@ -294,3 +330,10 @@ template sum*(body: untyped{nkForStmt}): untyped =
 
 template sum*(x: untyped): untyped =
     math.sum x
+
+#it's not possible to name these "min" and "max" since these symbols are automatically imported from system module
+template minc*(body: untyped{nkForStmt}): untyped =
+    min collect body
+
+template maxc*(body: untyped{nkForStmt}): untyped =
+    max collect body
