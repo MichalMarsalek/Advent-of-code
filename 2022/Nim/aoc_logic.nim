@@ -1,5 +1,6 @@
 include prelude
-import re, macros, httpclient, net, algorithm, times, math, strscans, deques, sugar
+import re, macros, httpclient, net, algorithm, times, strscans, deques, sugar
+import math except sum
 
 var SOLUTIONS*: Table[int, proc (x: string): Table[int, string]]
 
@@ -287,3 +288,9 @@ func groupsOf*[T](data: string, groupSize: Positive): seq[string] =
     data.distribute(data.len div groupSize)
 
 func `mod`*[T: SomeNumber](x, y: T): T = x.floorMod y
+
+template sum*(body: untyped{nkForStmt}): untyped =
+    math.sum collect body
+
+template sum*(x: untyped): untyped =
+    math.sum x
