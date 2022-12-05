@@ -61,6 +61,13 @@ proc initGrid*[T](width, height: int, value: T): Grid[T] =
     for y in 0..<height:
         result[y] = toSeq value.repeat width
 
+proc transpose*[T](grid: Grid[T]): Grid[T] =
+    let height = grid.mapIt(it.len).min
+    result = initGrid[T](grid.len, height)
+    for y in 0..<grid.height:
+        for x, item in grid[y]:
+            if x == height: break
+            result[y, x] = item
 
 template `[]`*[T](data: Grid[T], index: Point): T =
     data[index.y][index.x]
@@ -240,8 +247,8 @@ func medianHigh*[T](data: seq[T]): T =
     data.sorted[data.len div 2 + 1]
 
 
-func height*(data: Grid): int = len data
-func width*(data: Grid): int = len data[0]
+template height*(data: Grid): int = len data
+template width*(data: Grid): int = len data[0]
 
 iterator neighbours*(p: Point, directions: openarray[
         Point] = directions4): Point =
@@ -273,10 +280,8 @@ func neighboursRec*[T](data: Grid[T], p: Point, pred: proc (a, b: T): bool,
 
 iterator coordinates*[T](data: Grid[T]): Point =
     ## Yields all valid coordinates for the given grid.
-    let height = len data
-    let width = len data[0]
-    for y in 0..<height:
-        for x in 0..<width:
+    for y in 0..<data.height:
+        for x in 0..<data.width:
             yield (x, y)
 
 iterator pairs*[T](data: Grid[T]): (Point, T) =
