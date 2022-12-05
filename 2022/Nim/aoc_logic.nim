@@ -92,6 +92,12 @@ func drop*[T](s: seq[T], d: int): seq[T] =
     ## Returns s with d initial elements dropped
     s[d..^1]
 
+func popSeq*[T](s: var seq[T], d: int, preserveOrder: bool): seq[T] =
+    ## Removes d last items from s and returns them
+    result = s[^d..^1]
+    if not preserveOrder: reverse result
+    s.setLen(s.len - d)
+
 func grid*(data: string, sep: string = ""): Grid[string] =
     ## Splits input into 2D Grid, rows separated by NL,
     ## columns separated by sep - whitespace by default.
