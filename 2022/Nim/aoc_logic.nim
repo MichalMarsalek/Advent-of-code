@@ -348,3 +348,5 @@ template minc*(body: untyped{nkForStmt}): untyped =
 
 template maxc*(body: untyped{nkForStmt}): untyped =
     max collect body
+
+macro eval*(value: static[string]): untyped = parseStmt value
