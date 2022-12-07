@@ -350,3 +350,8 @@ template maxc*(body: untyped{nkForStmt}): untyped =
     max collect body
 
 macro eval*(value: static[string]): untyped = parseStmt value
+
+#type DefaultTable*[A; B; D: static B] = Table[A, B]
+#
+#proc `[]`*[A, B, D](t: DefaultTable[A, B, D]; key: A): B =
+#    t.getOrDefault(key, D)
