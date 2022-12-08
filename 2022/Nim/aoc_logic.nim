@@ -256,13 +256,16 @@ iterator neighbours*(p: Point, directions: openarray[
     for d in directions:
         yield p+d
 
+func contains*(grid: Grid, p: Point): bool =
+    p.y in 0..<grid.height and p.x in 0..<grid[p.y].len
+
 iterator neighbours*[T](data: Grid[T], p: Point,
                         directions: openarray[Point] = directions4): Point =
     ## Returns all neighbours of a lattice that
     ## are a valid indeces to the given data.
-    for (X, Y) in neighbours(p, directions):
-        if 0 <= X and X < data.width and 0 <= Y and Y < data.height:
-            yield (X, Y)
+    for neigh in neighbours(p, directions):
+        if neigh in data:
+            yield neigh
 
 func neighboursRec*[T](data: Grid[T], p: Point, pred: proc (a, b: T): bool,
                       directions: openarray[Point] = directions4): Table[Point, int] =
