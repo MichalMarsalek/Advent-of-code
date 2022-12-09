@@ -52,6 +52,27 @@ func x*(p: Point3): int = p[0]
 func y*(p: Point3): int = p[1]
 func z*(p: Point3): int = p[2]
 
+func toDirection*(name: char): Point =
+    case name.toUpperAscii:
+        of 'U': (0, -1)
+        of 'N': (0, -1)
+        of 'D': (0, 1)
+        of 'S': (0, 1)
+        of 'L': (-1, 0)
+        of 'W': (-1, 0)
+        of 'R': (1, 0)
+        of 'E': (1, 0)
+        else: raise newException(IOError, "Unkknown direction.")
+
+func toDirection*(name: string): Point =
+    if name.len == 1: return name[0].toDirection
+    case name.toUpperAscii:
+        of "NW": (-1, -1)
+        of "NE": (1, -1)
+        of "SW": (-1, 1)
+        of "SE": (1, 1)
+        else: raise newException(IOError, "Unkknown direction.")
+
 proc initGrid*[T](width, height: int): Grid[T] =
     result = newSeq[seq[T]](height)
     for y in 0..<height:
@@ -83,16 +104,33 @@ func size*[T](data: Grid[T]): int =
 
 template `+`*(a, b: Point): Point = (a.x+b.x, a.y+b.y)
 template `-`*(a: Point): Point = (-a.x, -a.y)
-template `-`*(a, b: Point): Point = a + (-b)
 template `*`*(a: int, b: Point): Point = (a*b.x, a*b.y)
+template map*(a: Point, f: untyped): Point = (f a.x, f a.y)
 func norm1*(a: Point): int = abs(a.x) + abs(a.y)
-func dist1*(a: Point, b: Point): int = norm1(a-b)
+func normMax*(a: Point): int = max(abs(a.x), abs(a.y))
+
+
 
 template `+`*(a, b: Point3): Point3 = (a.x+b.x, a.y+b.y, a.z+b.z)
 template `-`*(a: Point3): Point3 = (-a.x, -a.y, -a.z)
-template `-`*(a, b: Point3): Point3 = a + (-b)
 template `*`*(a: int, b: Point3): Point3 = (a*b.x, a*b.y, a*b.z)
+template map*(a: Point3, f: untyped): Point = (f a.x, f a.y, f a.z)
 func norm1*(a: Point3): int = abs(a.x) + abs(a.y) + abs(a.z)
+func normMax*(a: Point3): int = max(max(abs(a.x), abs(a.y)), abs(a.z))
+
+func rotateLeft*(a: Point): Point = (a.y, -a.x)
+func rotateRight*(a: Point): Point = (-a.y, a.x)
+func rotateLeft*(a: Point, amount: int): Point =
+    result = a
+    for _ in 1..(amount.floorMod 4):
+        result = a.rotateLeft
+func rotateRight*(a: Point, amount: int): Point = a.rotateLeft(-amount)
+
+template dist1*[T: Point | Point3](a: T, b: T): int = norm1(a-b)
+template distMax*[T: Point | Point3](a: T, b: T): int = normMax(a-b)
+template `-`*[T: Point | Point3](a, b: T): T = a + (-b)
+template `+=`*[T: Point | Point3](a: var T, b: T): untyped = a = a + b
+template `-=`*[T: Point | Point3](a: var T, b: T): untyped = a = a - b
 
 
 
