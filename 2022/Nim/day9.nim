@@ -12,8 +12,7 @@ day 9:
                     let newPos = rope[i] + (sgn(rope[i-1].x-rope[i].x), sgn(rope[i-1].y-rope[i].y))
                     if newPos != rope[i-1]:
                         rope[i] = newPos
-                    if i == rope.len - 1:
-                        tailVisited.incl rope[i]
+                tailVisited.incl rope[^1]
         card tailVisited
 
     let movements = collect:
