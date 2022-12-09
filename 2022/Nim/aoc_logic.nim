@@ -86,6 +86,7 @@ template `-`*(a: Point): Point = (-a.x, -a.y)
 template `-`*(a, b: Point): Point = a + (-b)
 template `*`*(a: int, b: Point): Point = (a*b.x, a*b.y)
 func norm1*(a: Point): int = abs(a.x) + abs(a.y)
+func dist1*(a: Point, b: Point): int = norm1(a-b)
 
 template `+`*(a, b: Point3): Point3 = (a.x+b.x, a.y+b.y, a.z+b.z)
 template `-`*(a: Point3): Point3 = (-a.x, -a.y, -a.z)
