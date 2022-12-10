@@ -6,7 +6,8 @@ day 10:
         xHistory &= xHistory[^1]
         if line != "noop":
             xHistory &= xHistory[^1] + ints1 line
-    part 1: sum(for c in countup(20, 220, 40): c * xHistory[c-1])
+    part 1:
+        sum(for c in countup(20, 220, 40): c * xHistory[c-1])
     part 2:
         var crt = collect:
             for y in 0..5:
