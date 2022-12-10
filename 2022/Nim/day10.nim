@@ -14,4 +14,4 @@ day 10:
                 for x in 0..39:
                     if abs(xHistory[x+40*y] - x) <= 1:
                         (x, y)
-        plot crt
+        ocr crt

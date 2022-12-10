@@ -344,14 +344,15 @@ func continuousAreas*[T](data: Grid[T], pred: proc (a, b: T): bool,
         visited = visited + area
         result.add area
 
-func plot*(points: openarray[Point]): string =
+func plot*(points: openarray[Point], header = true): string =
     ## Plots a list of points to a 2D grid,
     ## returns string representing the grid.
     let xRange = points.map(x).min..points.map(x).max
     let yRange = points.map(y).min..points.map(y).max
-    result = "Y = " & $yRange & ", X = " & $xRange
+    if header:
+        result = "Y = " & $yRange & ", X = " & $xRange & "\n"
     for y in yRange:
-        result &= '\n'
+        if y > 0: result &= '\n'
         for x in xRange:
             if (x, y) in points:
                 result &= "#"
@@ -397,3 +398,36 @@ macro eval*(value: static[string]): untyped = parseStmt value
 #
 #proc `[]`*[A, B, D](t: DefaultTable[A, B, D]; key: A): B =
 #    t.getOrDefault(key, D)
+
+type Font = Table[string, char]
+
+func splitToCharacters(display: string): seq[string] =
+    var display = splitLines(display).mapIt(it & " ")
+    var prev = -1
+    for x in 0..<display[0].len:
+        if display.allIt(it[x] == ' '):
+            if x > prev + 1:
+                result &= display.mapIt(it[prev+1..<x]).join "\n"
+            prev = x
+
+func initFont(letters: string, glyphs: string): Font =
+    var glyphs = splitToCharacters glyphs
+    zip(glyphs, letters).toTable
+
+const FONT1 = initFont("ABCEFGHIJKLOPRSUYZ", """
+ ##  ###   ##  #### ####  ##  #  # ###   ## #  # #     ##  ###  ###   ### #  # #   # ####
+#  # #  # #  # #    #    #  # #  #  #     # # #  #    #  # #  # #  # #    #  # #   #    #
+#  # ###  #    ###  ###  #    ####  #     # ##   #    #  # #  # #  # #    #  #  # #    # 
+#### #  # #    #    #    # ## #  #  #     # # #  #    #  # ###  ###   ##  #  #   #    #  
+#  # #  # #  # #    #    #  # #  #  #  #  # # #  #    #  # #    # #     # #  #   #   #   
+#  # ###   ##  #### #     ### #  # ###  ##  #  # ####  ##  #    #  # ###   ##    #   ####""")
+
+func ocr*(display: string, font = FONT1): string =
+    try:
+        display.splitToCharacters.mapIt(font[it]).join
+    except:
+        "OCR failed, pixels are\n" & display
+
+
+func ocr*(pixels: seq[Point], font = FONT1): string =
+    plot(pixels, false).ocr(font)
