@@ -1,7 +1,7 @@
 include aoc
 
 day 11:
-    type Monkey = ref object
+    type Monkey = object
         items: Deque[int]
         operand: int
         op: char
@@ -24,7 +24,7 @@ day 11:
         var monkeys = deepCopy monkeys
         let wrap = prod monkeys.mapIt it.test
         for round in 1..rounds:
-            for monkey in monkeys:
+            for monkey in mitems monkeys:
                 while monkey.items.len > 0:
                     inc monkey.totalInspected
                     var x = monkey.items.popFirst
