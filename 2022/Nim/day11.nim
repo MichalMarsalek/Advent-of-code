@@ -24,7 +24,7 @@ day 11:
         var monkeys = deepCopy monkeys
         let wrap = prod monkeys.mapIt it.test
         for round in 1..rounds:
-            for i, monkey in monkeys:
+            for monkey in monkeys:
                 while monkey.items.len > 0:
                     inc monkey.totalInspected
                     var x = monkey.items.popFirst
