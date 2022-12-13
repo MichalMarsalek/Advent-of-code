@@ -431,3 +431,12 @@ func ocr*(display: string, font = FONT1): string =
 
 func ocr*(pixels: seq[Point], font = FONT1): string =
     plot(pixels, false).ocr(font)
+
+type Tree*[T] = ref object
+    value*: T
+    children*: seq[Tree[T]]
+
+func newTree*[T](value: T, children: seq[Tree[T]] = @[]): Tree[T] =
+    new result
+    result.value = value
+    result.children = children
