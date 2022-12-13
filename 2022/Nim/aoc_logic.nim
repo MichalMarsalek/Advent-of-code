@@ -314,11 +314,11 @@ func neighboursRec*[T](data: Grid[T], p: Point, pred: proc (a, b: T): bool,
     var q = [(p, 0)].toDeque
     while q.len > 0:
         var (p, d) = q.popFirst
-        result[p] = d
         for P in data.neighbours(p, directions):
             if pred(data[p], data[P]):
                 if P notin result:
                     q.addLast (P, d+1)
+                    result[P] = d+1
 
 iterator coordinates*[T](data: Grid[T]): Point =
     ## Yields all valid coordinates for the given grid.
