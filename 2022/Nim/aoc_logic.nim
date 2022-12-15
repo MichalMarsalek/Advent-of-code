@@ -1,5 +1,5 @@
 include prelude
-import re, macros, httpclient, net, algorithm, times, strscans, deques, sugar
+import re, macros, httpclient, net, algorithm, std/monotimes, strscans, deques, sugar
 import math except sum
 
 var SOLUTIONS*: Table[int, proc (x: string): Table[int, string]]
@@ -237,13 +237,13 @@ proc getInput(day: int): string =
 
 proc run*(day: int) =
     ## Runs given day solution on the corresponding input.
-    let start = cpuTime()
+    let start = getMonoTime()
     let results = SOLUTIONS[day](getInput day)
-    let finish = cpuTime()
+    let finish = getMonoTime()
     echo "Day " & $day
     for k in results.keys.toSeq.sorted:
         echo fmt" Part {k}: {results[k]}"
-    echo fmt" Time: {finish-start:.2} s"
+    echo fmt" Time: {finish-start}"
 
 func modInv*(a0, modulus: int): int =
     ## Returns a modular inverse of a0 to the given modulus.
