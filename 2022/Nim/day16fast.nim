@@ -31,6 +31,7 @@ day 16:
     let setSize = 2^workingValves.len
     var memo = newSeqWith((workingValves.len+1) * 30 * setSize * 2, -1)
     proc search(start: int, time: int, closed: int, help: int): int =
+        if time == 0: return 0
         let key = ((start * 30 + time-1) * setSize + closed) * 2 + help
         if memo[key] == -1:
             memo[key] = 0
