@@ -1,5 +1,5 @@
 include prelude
-import re, macros, httpclient, net, algorithm, std/monotimes, strscans, deques, sugar
+import re, macros, httpclient, net, algorithm, std/monotimes, strscans, deques, sugar, bitops
 import math except sum
 
 var SOLUTIONS*: Table[int, proc (x: string): Table[int, string]]
@@ -440,3 +440,11 @@ func newTree*[T](value: T, children: seq[Tree[T]] = @[]): Tree[T] =
     new result
     result.value = value
     result.children = children
+
+iterator items*(value: SomeInteger): int =
+    ## Yields positions of set bits
+    var value = value
+    var i = 0
+    while value != 0:
+        yield value.firstSetBit - 1
+        value.flipBit value.firstSetBit - 1
