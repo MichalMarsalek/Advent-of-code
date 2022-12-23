@@ -377,8 +377,6 @@ func groupsOf*[T](data: seq[T], groupSize: Positive): seq[seq[T]] =
 func groupsOf*[T](data: string, groupSize: Positive): seq[string] =
     data.distribute(data.len div groupSize)
 
-func `mod`*[T: SomeNumber](x, y: T): T = x.floorMod y
-
 template sum*(body: untyped{nkForStmt}): untyped =
     math.sum collect body
 
@@ -448,3 +446,20 @@ iterator items*(value: SomeInteger): int =
     while value != 0:
         yield value.firstSetBit - 1
         value.flipBit value.firstSetBit - 1
+
+const ops* = toTable {
+    "+": proc(x, y: float): float = x+y,
+    "-": proc(x, y: float): float = x-y,
+    "*": proc(x, y: float): float = x*y,
+    "/": proc(x, y: float): float = x/y,
+}
+
+proc binarySearch*(f: float -> float, lo = -1e100, hi = 1e100, precision = 1.0): float =
+    var lo = lo
+    var hi = hi
+    while hi - lo > precision:
+        result = (lo + hi) / 2.0
+        if f(result) < 0.0:
+            hi = result
+        else:
+            lo = result
