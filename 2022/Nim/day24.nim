@@ -3,7 +3,7 @@ include aoc
 day 24:
     let w = lines[0].len - 2
     let h = lines.len - 2
-    var valley0: Table[Point, seq[Point]]
+    var valley0: DTable[Point, seq[Point]]
     for y, line in lines[1..^2]:
         for x, c in line[1..^2]:
             if c != '.':
@@ -11,13 +11,11 @@ day 24:
                 valley0[(x, y)] = @[toDirection c]
     var valley = @[valley0]
     for i in 0..1000:
-        var nt: Table[Point, seq[Point]]
+        var nt: DTable[Point, seq[Point]]
         for p, vs in valley[i]:
             for v in vs:
                 var np = p + v
                 np = (np.x.floorMod w, np.y.floorMod h)
-                if np notin nt:
-                    nt[np] = @[]
                 nt[np] &= v
         valley &= nt
 

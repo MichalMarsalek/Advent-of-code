@@ -4,3 +4,4 @@ import std/math except sum
 import std/[os, strutils, times, parseutils, hashes, tables, sequtils,
         parseopt, strformat, re, macros, httpclient, net, algorithm,
         strscans, deques, sugar, setutils]
+import dtables

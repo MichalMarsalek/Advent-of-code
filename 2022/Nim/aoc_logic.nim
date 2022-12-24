@@ -56,13 +56,17 @@ func toDirection*(name: char): Point =
     case name.toUpperAscii:
         of 'U': (0, -1)
         of 'N': (0, -1)
+        of '^': (0, -1)
         of 'D': (0, 1)
         of 'S': (0, 1)
+        of 'V': (0, 1)
         of 'L': (-1, 0)
         of 'W': (-1, 0)
+        of '<': (-1, 0)
         of 'R': (1, 0)
         of 'E': (1, 0)
-        else: raise newException(IOError, "Unkknown direction.")
+        of '>': (1, 0)
+        else: raise newException(IOError, "Unkknown direction." & name)
 
 func toDirection*(name: string): Point =
     if name.len == 1: return name[0].toDirection
@@ -71,7 +75,7 @@ func toDirection*(name: string): Point =
         of "NE": (1, -1)
         of "SW": (-1, 1)
         of "SE": (1, 1)
-        else: raise newException(IOError, "Unkknown direction.")
+        else: raise newException(IOError, "Unknown direction." & name)
 
 proc initGrid*[T](width, height: int): Grid[T] =
     result = newSeq[seq[T]](height)
